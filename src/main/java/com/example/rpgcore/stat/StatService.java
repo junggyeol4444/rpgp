@@ -127,6 +127,15 @@ public final class StatService implements Lifecycle, Reloadable {
      * 않아 가장 단순한 쪽을 택했다. 선택 이후 레벨만 세는 쪽이
      * 맞다면 이 메서드만 고치면 된다.
      */
+    /**
+     * 능력치 실제 값. 분배한 포인트 + 직업 보정.
+     * 스킬의 statScaling 이 이 값을 쓴다.
+     */
+    public int abilityPoints(PlayerData data, String statId) {
+        JobDefinition job = config.jobs().tree().base(data.job().base());
+        return data.combat().stat(statId) + jobBonus(job, statId, data);
+    }
+
     private int jobBonus(JobDefinition job, String statId, PlayerData data) {
         if (job == null) {
             return 0;

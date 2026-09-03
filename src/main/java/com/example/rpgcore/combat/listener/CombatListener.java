@@ -53,6 +53,10 @@ public final class CombatListener implements Listener {
      */
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent event) {
+        if (pipeline.isAlreadyResolved(event.getEntity().getUniqueId())) {
+            // 파이프라인이 이미 계산해서 넣는 중인 피해다. 그대로 통과시킨다.
+            return;
+        }
         RpgPlayer victim = asRpgPlayer(event.getEntity());
         RpgPlayer attacker = null;
         if (event instanceof EntityDamageByEntityEvent byEntity) {

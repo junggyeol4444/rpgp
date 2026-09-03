@@ -46,6 +46,8 @@ permissions:
       rpgcore.command.info: true
       rpgcore.command.stat: true
       rpgcore.command.job: true
+      rpgcore.command.skill: true
+      rpgcore.command.bind: true
   rpgcore.command.info:
     description: /rpg info
     default: true
@@ -54,6 +56,12 @@ permissions:
     default: true
   rpgcore.command.job:
     description: /rpg job
+    default: true
+  rpgcore.command.skill:
+    description: /rpg skill
+    default: true
+  rpgcore.command.bind:
+    description: /rpg bind
     default: true
 
   rpgcore.admin:
@@ -76,6 +84,9 @@ permissions:
       rpgcore.admin.statreset: true
       rpgcore.admin.setjob: true
       rpgcore.admin.jobreset: true
+      rpgcore.admin.skillpoint: true
+      rpgcore.admin.skill: true
+      rpgcore.admin.bindreset: true
   rpgcore.admin.reload:
     default: op
   rpgcore.admin.save:
@@ -99,4 +110,10 @@ permissions:
   rpgcore.admin.setjob:
     default: op
   rpgcore.admin.jobreset:
+    default: op
+  rpgcore.admin.skillpoint:
+    default: op
+  rpgcore.admin.skill:
+    default: op
+  rpgcore.admin.bindreset:
     default: op

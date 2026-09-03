@@ -8,6 +8,7 @@ import com.example.rpgcore.config.schema.GuiScreen;
 import com.example.rpgcore.config.schema.GeneralSettings;
 import com.example.rpgcore.config.schema.LevelSettings;
 import com.example.rpgcore.config.schema.ResetSettings;
+import com.example.rpgcore.config.schema.SkillSettings;
 import com.example.rpgcore.config.schema.StatSettings;
 import com.example.rpgcore.config.schema.StorageSettings;
 import com.example.rpgcore.config.schema.UiSettings;
@@ -17,11 +18,19 @@ import com.example.rpgcore.job.JobBranch;
 import com.example.rpgcore.job.JobDefinition;
 import com.example.rpgcore.job.JobTree;
 import com.example.rpgcore.level.ExpSource;
+import com.example.rpgcore.skill.PowerScaling;
+import com.example.rpgcore.skill.SkillDefinition;
+import com.example.rpgcore.skill.SkillStage;
+import com.example.rpgcore.skill.SkillTree;
+import com.example.rpgcore.skill.effect.EffectType;
+import com.example.rpgcore.skill.effect.SkillEffect;
 import com.example.rpgcore.stat.DerivedStat;
 import com.example.rpgcore.stat.StatType;
 import com.example.rpgcore.util.Messages;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
@@ -51,6 +60,9 @@ import org.bukkit.plugin.Plugin;
 public final class ConfigManager implements Reloadable {
 
     /** 플러그인 폴더에 깔아 둘 기본 설정 파일. 지시서 6장 목록. */
+    /** 스킬 정의를 나눠 담는 디렉터리. (지시서 6장) */
+    private static final String SKILL_DIRECTORY = "skills";
+
     private static final List<String> DEFAULT_FILES = List.of(
             "config.yml",
             "levels.yml",
@@ -65,8 +77,7 @@ public final class ConfigManager implements Reloadable {
             "gui.yml",
             "messages.yml");
 
-    // TODO 4단계 / 5단계: 지시서 6장에 따라 skills, quests 는 디렉터리 스캔을
-    //      지원해야 한다. 해당 단계에서 스캔 로직을 붙인다.
+    // TODO 5단계: quests 도 디렉터리 스캔을 지원해야 한다. (지시서 6장)
 
     private final Plugin plugin;
     private final Logger logger;
@@ -78,6 +89,8 @@ public final class ConfigManager implements Reloadable {
     private volatile CombatSettings combat = CombatSettings.defaults();
     private volatile UiSettings ui = UiSettings.defaults();
     private volatile JobSettings jobs = JobSettings.defaults();
+    private volatile SkillSettings skill = SkillSettings.defaults();
+    private volatile SkillTree skillTree = SkillTree.empty();
     private volatile Map<String, GuiScreen> guiScreens = new LinkedHashMap<>();
     private volatile boolean debug;
     private volatile int lastErrorCount;
@@ -100,6 +113,7 @@ public final class ConfigManager implements Reloadable {
         loadLevels(report);
         loadStats(report);
         loadJobs(report);
+        loadSkills(report);
         loadGui(report);
         loadMessages(report);
         this.lastErrorCount = report.errorCount();
@@ -132,6 +146,14 @@ public final class ConfigManager implements Reloadable {
 
     public JobSettings jobs() {
         return jobs;
+    }
+
+    public SkillSettings skill() {
+        return skill;
+    }
+
+    public SkillTree skillTree() {
+        return skillTree;
     }
 
     /** gui.yml 의 화면. 없으면 기본 크기의 빈 화면을 준다. */
@@ -176,6 +198,10 @@ public final class ConfigManager implements Reloadable {
         File folder = plugin.getDataFolder();
         if (!folder.exists() && !folder.mkdirs()) {
             logger.warning("플러그인 폴더를 만들지 못했습니다: " + folder.getAbsolutePath());
+        }
+        File skillDirectory = new File(folder, SKILL_DIRECTORY);
+        if (!skillDirectory.exists() && !skillDirectory.mkdirs()) {
+            logger.warning("skills 디렉터리를 만들지 못했습니다: " + skillDirectory.getAbsolutePath());
         }
         for (String name : DEFAULT_FILES) {
             File target = new File(folder, name);
@@ -254,6 +280,35 @@ public final class ConfigManager implements Reloadable {
             }
         }
         ui = new UiSettings(uiInterval, channels);
+
+        SkillSettings skillDefaults = SkillSettings.defaults();
+        double manaRegen = config.getDouble("skill.manaRegenPerSecond",
+                skillDefaults.manaRegenPerSecond());
+        if (manaRegen < 0) {
+            report.error(file, "skill.manaRegenPerSecond",
+                    "음수는 둘 수 없어 0으로 되돌립니다: " + manaRegen);
+            manaRegen = 0;
+        }
+        int baseSlots = config.getInt("skill.baseItemSlots", skillDefaults.baseItemSlots());
+        if (baseSlots < 0) {
+            report.error(file, "skill.baseItemSlots",
+                    "음수는 둘 수 없어 기본값으로 되돌립니다: " + baseSlots);
+            baseSlots = skillDefaults.baseItemSlots();
+        }
+        int slotsPerAdvancement = config.getInt("skill.slotsPerAdvancement",
+                skillDefaults.slotsPerAdvancement());
+        if (slotsPerAdvancement < 0) {
+            report.error(file, "skill.slotsPerAdvancement",
+                    "음수는 둘 수 없어 기본값으로 되돌립니다: " + slotsPerAdvancement);
+            slotsPerAdvancement = skillDefaults.slotsPerAdvancement();
+        }
+        int unlockCost = config.getInt("skill.unlockCost", skillDefaults.unlockCost());
+        if (unlockCost < 0) {
+            report.error(file, "skill.unlockCost",
+                    "음수는 둘 수 없어 0으로 되돌립니다: " + unlockCost);
+            unlockCost = 0;
+        }
+        skill = new SkillSettings(manaRegen, baseSlots, slotsPerAdvancement, unlockCost);
 
         boolean debugEnabled = config.getBoolean("debug.enabled", false);
         general = new GeneralSettings(new StorageSettings(type, interval, threads), debugEnabled);
@@ -487,6 +542,186 @@ public final class ConfigManager implements Reloadable {
             result.put(id, new JobBranch(id, one.getString("display", id), children));
         }
         return result;
+    }
+
+    /**
+     * 지시서 6장: skills 는 디렉터리 스캔을 지원한다.
+     * skills.yml 을 먼저 읽고, skills/ 디렉터리의 .yml 을 이름 순으로 덧붙인다.
+     */
+    private void loadSkills(ValidationReport report) {
+        Map<String, SkillDefinition> parsed = new LinkedHashMap<>();
+        readSkillFile(new File(plugin.getDataFolder(), "skills.yml"), "skills.yml",
+                parsed, report);
+
+        File directory = new File(plugin.getDataFolder(), SKILL_DIRECTORY);
+        File[] extra = directory.isDirectory() ? directory.listFiles() : null;
+        if (extra != null) {
+            Arrays.sort(extra, Comparator.comparing(File::getName));
+            for (File file : extra) {
+                if (file.isFile() && file.getName().endsWith(".yml")) {
+                    readSkillFile(file, SKILL_DIRECTORY + "/" + file.getName(), parsed, report);
+                }
+            }
+        }
+
+        validateSkillReferences(parsed, report);
+        skillTree = new SkillTree(parsed);
+    }
+
+    private void readSkillFile(File file, String label,
+                               Map<String, SkillDefinition> target, ValidationReport report) {
+        if (!file.isFile()) {
+            return;
+        }
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        ConfigurationSection root = config.getConfigurationSection("skills");
+        if (root == null) {
+            report.error(label, "skills", "스킬 정의가 없습니다.");
+            return;
+        }
+        for (String id : root.getKeys(false)) {
+            ConfigurationSection section = root.getConfigurationSection(id);
+            if (section == null) {
+                report.error(label, "skills." + id, "형식이 맞지 않아 건너뜁니다.");
+                continue;
+            }
+            if (target.containsKey(id)) {
+                report.error(label, "skills." + id, "다른 파일에 이미 있는 스킬 id 라 건너뜁니다.");
+                continue;
+            }
+            SkillDefinition skillDefinition = readSkill(id, section, label, report);
+            if (skillDefinition != null) {
+                target.put(id, skillDefinition);
+            }
+        }
+    }
+
+    /** 한 스킬을 읽는다. 해석할 수 없으면 null 을 주고 그 스킬만 빠진다. */
+    private SkillDefinition readSkill(String id, ConfigurationSection section,
+                                      String label, ValidationReport report) {
+        String path = "skills." + id;
+
+        String jobId = section.getString("job", null);
+        if (jobId == null) {
+            report.error(label, path + ".job", "소속 직업이 없어 건너뜁니다.");
+            return null;
+        }
+        SkillStage stage = SkillStage.fromConfig(section.getString("stage", "BASE"));
+        if (stage == null) {
+            report.error(label, path + ".stage",
+                    "알 수 없는 단계라 건너뜁니다: " + section.getString("stage", null));
+            return null;
+        }
+
+        List<SkillEffect> effects = readEffects(section.getList("effects"), label, path, report);
+        if (effects == null) {
+            // 지시서 8장 [규칙]: 모르는 효과 타입이면 그 스킬만 비활성화한다.
+            return null;
+        }
+
+        int maxLevel = section.getInt("maxLevel", SkillDefinition.DEFAULT_MAX_LEVEL);
+        if (maxLevel < 1 || maxLevel > SkillDefinition.DEFAULT_MAX_LEVEL) {
+            report.error(label, path + ".maxLevel",
+                    "1 이상 " + SkillDefinition.DEFAULT_MAX_LEVEL
+                            + " 이하여야 해서 되돌립니다: " + maxLevel);
+            maxLevel = SkillDefinition.DEFAULT_MAX_LEVEL;
+        }
+
+        PowerScaling defaults = PowerScaling.defaults();
+        String scalingType = section.getString("power.scaling.type", PowerScaling.DIMINISHING);
+        if (!PowerScaling.DIMINISHING.equalsIgnoreCase(scalingType)) {
+            report.error(label, path + ".power.scaling.type",
+                    "알 수 없는 감쇠 방식이라 " + PowerScaling.DIMINISHING
+                            + " 으로 대체합니다: " + scalingType);
+            scalingType = PowerScaling.DIMINISHING;
+        }
+        PowerScaling power = new PowerScaling(
+                section.getDouble("power.base", defaults.base()),
+                scalingType,
+                section.getDouble("power.scaling.coefficient", defaults.coefficient()),
+                section.getDouble("power.scaling.exponent", defaults.exponent()));
+
+        Map<String, Double> statScaling = new LinkedHashMap<>();
+        ConfigurationSection scalingSection =
+                section.getConfigurationSection("power.statScaling");
+        if (scalingSection != null) {
+            for (String statId : scalingSection.getKeys(false)) {
+                if (stats.stat(statId) == null) {
+                    report.error(label, path + ".power.statScaling." + statId,
+                            "stats.yml 에 없는 능력치라 건너뜁니다.");
+                    continue;
+                }
+                statScaling.put(statId, scalingSection.getDouble(statId, 0.0));
+            }
+        }
+
+        return new SkillDefinition(id,
+                section.getString("display", id),
+                jobId,
+                stage,
+                section.getString("tree.parent", null),
+                section.getString("tree.branch", null),
+                Math.max(0, section.getDouble("cost.mana", 0.0)),
+                section.getDouble("cost.manaPerLevel", 0.0),
+                Math.max(0, section.getDouble("cooldown.seconds", 0.0)),
+                section.getDouble("cooldown.reductionPerLevel", 0.0),
+                maxLevel,
+                power,
+                statScaling,
+                effects);
+    }
+
+    /** 효과 목록을 읽는다. 모르는 타입이 하나라도 있으면 null. */
+    private List<SkillEffect> readEffects(List<?> raw, String label, String path,
+                                          ValidationReport report) {
+        List<SkillEffect> effects = new ArrayList<>();
+        if (raw == null) {
+            return effects;
+        }
+        for (int i = 0; i < raw.size(); i++) {
+            if (!(raw.get(i) instanceof Map<?, ?> entry)) {
+                report.error(label, path + ".effects[" + i + "]", "형식이 맞지 않습니다.");
+                return null;
+            }
+            Object typeValue = entry.get("type");
+            EffectType type = EffectType.fromConfig(
+                    typeValue == null ? null : String.valueOf(typeValue));
+            if (type == null) {
+                report.error(label, path + ".effects[" + i + "].type",
+                        "알 수 없는 효과 타입이라 이 스킬을 끕니다: " + typeValue);
+                return null;
+            }
+            Map<String, Double> values = new LinkedHashMap<>();
+            for (Map.Entry<?, ?> field : entry.entrySet()) {
+                if ("type".equals(String.valueOf(field.getKey()))) {
+                    continue;
+                }
+                if (field.getValue() instanceof Number number) {
+                    values.put(String.valueOf(field.getKey()), number.doubleValue());
+                }
+            }
+            effects.add(new SkillEffect(type, values));
+        }
+        return effects;
+    }
+
+    /** 스킬끼리의 참조(선행 스킬)와 직업 참조를 확인한다. */
+    private void validateSkillReferences(Map<String, SkillDefinition> parsed,
+                                         ValidationReport report) {
+        for (SkillDefinition skillDefinition : List.copyOf(parsed.values())) {
+            String label = "skills";
+            if (!jobs.tree().hasBase(skillDefinition.jobId())) {
+                report.error(label, "skills." + skillDefinition.id() + ".job",
+                        "jobs.yml 에 없는 직업이라 스킬을 끕니다: " + skillDefinition.jobId());
+                parsed.remove(skillDefinition.id());
+                continue;
+            }
+            if (skillDefinition.hasParent() && !parsed.containsKey(skillDefinition.parentId())) {
+                report.error(label, "skills." + skillDefinition.id() + ".tree.parent",
+                        "선행 스킬이 없어 스킬을 끕니다: " + skillDefinition.parentId());
+                parsed.remove(skillDefinition.id());
+            }
+        }
     }
 
     private void loadGui(ValidationReport report) {

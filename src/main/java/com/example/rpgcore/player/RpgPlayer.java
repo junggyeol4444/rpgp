@@ -1,15 +1,17 @@
 package com.example.rpgcore.player;
 
+import com.example.rpgcore.binding.InputState;
 import com.example.rpgcore.player.data.PlayerData;
 import com.example.rpgcore.stat.DerivedStats;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import org.bukkit.entity.Player;
 
 /**
  * 지시서 4장 [RpgPlayer] — 접속 중에만 존재하는 런타임 상태.
  *
  * <p>지시서 15장에 따라 아직 오지 않은 단계의 항목은 두지 않는다.
- * 쿨타임 맵과 InputState 는 4단계에서 추가한다.
  */
 public final class RpgPlayer {
 
@@ -25,8 +27,18 @@ public final class RpgPlayer {
     /** 내부 HP. 바닐라 하트 20칸과 별개다. (지시서 9장) */
     private double health;
 
-    /** 현재 마나. 소모는 4단계에서 붙는다. */
+    /** 현재 마나. */
     private double mana;
+
+    /** 웅크림·달리기 유지 상태. (지시서 10장) */
+    private final InputState inputState = new InputState();
+
+    /**
+     * 스킬 id -> 쿨타임이 끝나는 시각 (nanoTime 기준).
+     * 저장 대상이 아니다. 입력 처리와 주기 갱신이 서로 다른 시점에
+     * 건드릴 수 있어 동시성 맵을 쓴다.
+     */
+    private final Map<String, Long> cooldowns = new ConcurrentHashMap<>();
 
     public RpgPlayer(Player player, PlayerData data) {
         this.player = player;
@@ -71,5 +83,13 @@ public final class RpgPlayer {
 
     public void mana(double mana) {
         this.mana = mana;
+    }
+
+    public InputState inputState() {
+        return inputState;
+    }
+
+    public Map<String, Long> cooldowns() {
+        return cooldowns;
     }
 }

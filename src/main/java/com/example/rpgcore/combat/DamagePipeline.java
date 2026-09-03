@@ -5,8 +5,12 @@ import com.example.rpgcore.config.schema.CombatSettings;
 import com.example.rpgcore.core.Lifecycle;
 import com.example.rpgcore.player.RpgPlayer;
 import com.example.rpgcore.stat.DerivedStat;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Logger;
+import org.bukkit.entity.LivingEntity;
 
 /**
  * 지시서 9장 [전투 계산] — 커스텀 데미지 계산.
@@ -24,6 +28,15 @@ public final class DamagePipeline implements Lifecycle {
 
     private final ConfigManager config;
     private final Logger logger;
+
+    /**
+     * 이 파이프라인이 직접 피해를 넣는 중인 대상.
+     *
+     * <p>몬스터에게 피해를 주려면 바닐라 쪽에 값을 넘겨야 하는데, 그러면
+     * 우리 리스너가 그 이벤트를 다시 계산하려 든다. 계산을 마친 대상만
+     * 여기에 표시해 두고 리스너가 건너뛰게 한다.
+     */
+    private final Set<UUID> alreadyResolved = ConcurrentHashMap.newKeySet();
 
     public DamagePipeline(ConfigManager config, Logger logger) {
         this.config = config;
@@ -44,8 +57,6 @@ public final class DamagePipeline implements Lifecycle {
      *                       (커스텀 몬스터가 붙기 전까지는 바닐라 값)
      */
     public Outcome resolve(RpgPlayer attacker, RpgPlayer victim, double fallbackDamage) {
-        CombatSettings settings = config.combat();
-
         // 1) 공격 주체 판별 / 2) 기본 위력 산출
         double power;
         if (attacker != null) {
@@ -56,6 +67,25 @@ public final class DamagePipeline implements Lifecycle {
             // TODO 커스텀 몬스터 단계: mobs.yml 의 damage 를 쓴다.
             power = Math.max(0.0, fallbackDamage);
         }
+        return finish(attacker, victim, power);
+    }
+
+    /**
+     * 스킬 피해를 계산한다.
+     *
+     * <p>지시서 9장 [주의]: 스킬·펫·설치물 데미지도 전부 이 파이프라인을
+     * 지나야 한다. 평타와 다른 것은 기본 위력을 어디서 가져오는지뿐이다.
+     *
+     * @param skillPower 스킬 위력 + 능력치 보정까지 끝난 값
+     */
+    public Outcome resolveSkill(RpgPlayer attacker, RpgPlayer victim, double skillPower) {
+        return finish(attacker, victim, Math.max(0.0, skillPower));
+    }
+
+    /** 3번부터 6번까지는 평타와 스킬이 같다. */
+    private Outcome finish(RpgPlayer attacker, RpgPlayer victim, double basePower) {
+        CombatSettings settings = config.combat();
+        double power = basePower;
 
         // 3) 바닐라 인챈트 보정
         power *= vanillaEnchantModifier(attacker);
@@ -106,6 +136,31 @@ public final class DamagePipeline implements Lifecycle {
      */
     private double regionModifier() {
         return 1.0;
+    }
+
+    /**
+     * 계산이 끝난 피해를 플레이어가 아닌 대상에게 넣는다.
+     *
+     * <p>몬스터는 아직 바닐라 체력을 쓰므로 바닐라 쪽에 값을 넘긴다.
+     * 그 과정에서 다시 계산되지 않도록 표시를 남긴다.
+     *
+     * <p>TODO 커스텀 몬스터 단계: 몬스터도 내부 HP 로 옮기면 이 우회가 없어진다.
+     */
+    public void dealToEntity(LivingEntity target, double damage) {
+        if (damage <= 0 || !Double.isFinite(damage)) {
+            return;
+        }
+        alreadyResolved.add(target.getUniqueId());
+        try {
+            target.damage(damage);
+        } finally {
+            alreadyResolved.remove(target.getUniqueId());
+        }
+    }
+
+    /** 이 파이프라인이 이미 계산해서 넣는 중인 피해인지. */
+    public boolean isAlreadyResolved(UUID entityId) {
+        return alreadyResolved.contains(entityId);
     }
 
     private static String name(RpgPlayer rpgPlayer) {

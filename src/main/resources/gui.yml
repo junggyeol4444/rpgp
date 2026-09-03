@@ -37,15 +37,28 @@ screens:
       tamer:     { slot: 15, material: BONE }
       trapper:   { slot: 16, material: TRIPWIRE_HOOK }
 
+  # 스킬트리 화면은 스킬이 직업당 6~8개라 자리를 하나씩 적지 않는다.
+  # unlocked / available / locked 는 상태별 아이템 종류를 정하는 데만 쓰이고
+  # slot 값은 무시된다. 스킬은 0번 칸부터 순서대로 채워진다.
   skill:
     title: "스킬트리"
     rows: 6
-    icons: {}
+    icons:
+      info:      { slot: 49, material: PAPER }
+      unlocked:  { slot: 0,  material: ENCHANTED_BOOK }
+      available: { slot: 0,  material: BOOK }
+      locked:    { slot: 0,  material: GRAY_DYE }
 
+  # 첫 줄은 스킬 아이템 슬롯, 둘째·셋째 줄은 키 조합 칸이다.
+  # slot / combo / empty 는 아이템 종류만 쓰인다.
   bind:
     title: "스킬 등록"
-    rows: 3
-    icons: {}
+    rows: 4
+    icons:
+      info:  { slot: 31, material: PAPER }
+      slot:  { slot: 0,  material: BLAZE_ROD }
+      combo: { slot: 0,  material: ENDER_EYE }
+      empty: { slot: 0,  material: GRAY_STAINED_GLASS_PANE }
 
   quest:
     title: "퀘스트"

@@ -2,6 +2,9 @@ package com.example.rpgcore;
 
 import com.example.rpgcore.combat.DamagePipeline;
 import com.example.rpgcore.combat.HealthService;
+import com.example.rpgcore.binding.BindingService;
+import com.example.rpgcore.binding.SkillItems;
+import com.example.rpgcore.binding.listener.InputListener;
 import com.example.rpgcore.combat.listener.CombatListener;
 import com.example.rpgcore.command.RpgCommand;
 import com.example.rpgcore.command.admin.AdminCommand;
@@ -12,13 +15,18 @@ import com.example.rpgcore.command.admin.ExpCommand;
 import com.example.rpgcore.command.admin.JobResetCommand;
 import com.example.rpgcore.command.admin.ReloadCommand;
 import com.example.rpgcore.command.admin.SaveCommand;
+import com.example.rpgcore.command.admin.BindResetCommand;
 import com.example.rpgcore.command.admin.SetJobCommand;
 import com.example.rpgcore.command.admin.SetLevelCommand;
 import com.example.rpgcore.command.admin.StatPointCommand;
 import com.example.rpgcore.command.admin.StatResetCommand;
+import com.example.rpgcore.command.admin.SkillAdminCommand;
+import com.example.rpgcore.command.admin.SkillPointCommand;
 import com.example.rpgcore.command.admin.StatusCommand;
 import com.example.rpgcore.command.sub.InfoCommand;
+import com.example.rpgcore.command.sub.BindCommand;
 import com.example.rpgcore.command.sub.JobCommand;
+import com.example.rpgcore.command.sub.SkillCommand;
 import com.example.rpgcore.command.sub.StatCommand;
 import com.example.rpgcore.config.ConfigManager;
 import com.example.rpgcore.config.validation.ValidationReport;
@@ -28,6 +36,14 @@ import com.example.rpgcore.core.ServiceRegistry;
 import com.example.rpgcore.job.JobService;
 import com.example.rpgcore.level.CombatLevelService;
 import com.example.rpgcore.player.PlayerManager;
+import com.example.rpgcore.skill.SkillService;
+import com.example.rpgcore.skill.cooldown.CooldownService;
+import com.example.rpgcore.skill.effect.DamageAreaExecutor;
+import com.example.rpgcore.skill.effect.DamageConeExecutor;
+import com.example.rpgcore.skill.effect.DamageTargetExecutor;
+import com.example.rpgcore.skill.effect.EffectRegistry;
+import com.example.rpgcore.skill.effect.HealSelfExecutor;
+import com.example.rpgcore.skill.mana.ManaService;
 import com.example.rpgcore.stat.StatService;
 import com.example.rpgcore.storage.PlayerDataRepository;
 import com.example.rpgcore.storage.cache.PlayerDataCache;
@@ -59,8 +75,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  * 게임 로직은 각 서비스에 둔다.
  *
  * <p>현재 범위는 지시서 14장의 1단계(골격과 전투 레벨),
- * 2단계(스탯과 전투), 3단계(기본 직업)다.
- * 전직·스킬·퀘스트는 아직 없다.
+ * 2단계(스탯과 전투), 3단계(기본 직업), 4단계(스킬 코어)다.
+ * 전직과 퀘스트는 아직 없다.
  */
 public final class RpgCorePlugin extends JavaPlugin {
 
@@ -102,6 +118,22 @@ public final class RpgCorePlugin extends JavaPlugin {
         HealthService health = registry.register(HealthService.class, new HealthService());
         DamagePipeline pipeline = registry.register(DamagePipeline.class,
                 new DamagePipeline(config, getLogger()));
+        CooldownService cooldowns = registry.register(CooldownService.class,
+                new CooldownService());
+        ManaService mana = registry.register(ManaService.class,
+                new ManaService(config, players, mainThread));
+        EffectRegistry effects = new EffectRegistry()
+                .register(new DamageTargetExecutor())
+                .register(new DamageConeExecutor())
+                .register(new DamageAreaExecutor())
+                .register(new HealSelfExecutor());
+        SkillService skills = registry.register(SkillService.class,
+                new SkillService(config, saves, stats, mana, cooldowns, pipeline,
+                        health, players, effects));
+        SkillItems skillItems = new SkillItems(this, messages);
+        BindingService bindings = registry.register(BindingService.class,
+                new BindingService(config, saves, skills, skillItems));
+
         GuiManager guis = registry.register(GuiManager.class, new GuiManager(players));
         HudService hud = registry.register(HudService.class,
                 new HudService(players, mainThread, getLogger(),
@@ -125,6 +157,8 @@ public final class RpgCorePlugin extends JavaPlugin {
         players.onDetach(rpgPlayer -> {
             hud.detach(rpgPlayer);
             guis.forget(rpgPlayer);
+            rpgPlayer.inputState().clear();
+            cooldowns.clear(rpgPlayer);
         });
 
         registry.enableAll();
@@ -133,16 +167,18 @@ public final class RpgCorePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(guis, this);
         getServer().getPluginManager().registerEvents(
                 new CombatListener(config, players, pipeline, health), this);
+        getServer().getPluginManager().registerEvents(
+                new InputListener(players, bindings, skills, skillItems, messages), this);
 
         if (!registerCommands(config, repository, saves, levels, players, stats, jobs,
-                guis, messages)) {
+                skills, bindings, guis, messages)) {
             getLogger().severe("명령어를 등록하지 못했습니다. plugin.yml 의 commands 항목을 확인하세요.");
         }
 
         // 서버가 돌아가는 중에 켜졌다면 이미 접속해 있는 플레이어가 있다.
         players.loadOnlinePlayers();
 
-        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~3단계)");
+        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~4단계)");
     }
 
     @Override
@@ -164,6 +200,8 @@ public final class RpgCorePlugin extends JavaPlugin {
                                      PlayerManager players,
                                      StatService stats,
                                      JobService jobs,
+                                     SkillService skills,
+                                     BindingService bindings,
                                      GuiManager guis,
                                      Messages messages) {
         AdminCommand admin = new AdminCommand(messages);
@@ -177,6 +215,9 @@ public final class RpgCorePlugin extends JavaPlugin {
                 .register(new StatResetCommand(players, stats, messages))
                 .register(new SetJobCommand(players, jobs, messages))
                 .register(new JobResetCommand(players, jobs, messages))
+                .register(new SkillPointCommand(players, skills, messages))
+                .register(new SkillAdminCommand(players, skills, messages))
+                .register(new BindResetCommand(players, bindings, messages))
                 .register(new DataDumpCommand(players, messages))
                 .register(new DataResetCommand(players, messages));
 
@@ -184,6 +225,8 @@ public final class RpgCorePlugin extends JavaPlugin {
         root.register(new InfoCommand(players, levels, jobs, messages));
         root.register(new StatCommand(config, players, stats, guis, messages));
         root.register(new JobCommand(config, players, jobs, guis, messages));
+        root.register(new SkillCommand(config, players, skills, guis, messages));
+        root.register(new BindCommand(config, players, bindings, skills, guis, messages));
         root.register(admin);
 
         PluginCommand command = getCommand(PluginIds.ROOT_COMMAND);
