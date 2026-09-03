@@ -32,9 +32,14 @@ command:
     exp: " 경험치: {exp} / {required}"
     exp-max: " 경험치: {exp} (최대 레벨)"
     stat-points: " 남은 스탯 포인트: {points}"
+    job: " 직업: {job}"
+    job-none: " 직업: 미선택 ({level}레벨에 선택 가능)"
   stat:
     desc: "스탯 분배"
     no-stats: "stats.yml 에 능력치 정의가 없습니다. 콘솔 로그를 확인하세요."
+  job:
+    desc: "직업 선택·전직"
+    no-jobs: "jobs.yml 에 직업 정의가 없습니다. 콘솔 로그를 확인하세요."
   admin:
     desc: "관리자 명령"
     reload:
@@ -57,6 +62,10 @@ command:
       desc: "스탯 포인트 지급·회수"
     statreset:
       desc: "스탯 강제 초기화"
+    setjob:
+      desc: "직업 강제 지정"
+    jobreset:
+      desc: "전직 상태 초기화"
 
 level:
   up: "레벨 업! {before} -> {after}"
@@ -94,6 +103,12 @@ admin:
     taken: "{player}의 스탯 포인트 {amount}를 회수했습니다."
   statreset:
     done: "{player}의 스탯을 초기화했습니다. (비용 없음)"
+  setjob:
+    done: "{player}의 직업을 {job}(으)로 지정했습니다."
+    unknown-job: "jobs.yml 에 없는 직업입니다: {job}"
+    tier-not-supported: "지금은 base 만 지정할 수 있습니다. 1차·2차 전직은 8·9단계입니다: {tier}"
+  jobreset:
+    done: "{player}의 전직 상태를 초기화했습니다."
 
 # 키 이름에 on/off 를 쓰지 않는다. YAML 1.1 에서 on/off/yes/no 는
 # 문자열이 아니라 불리언으로 해석되어 경로가 state.true / state.false 가 된다.
@@ -146,3 +161,24 @@ gui:
       reset-not-allowed: "스탯 초기화가 막혀 있습니다."
       not-enough-currency: "초기화 비용이 모자랍니다."
       nothing-to-reset: "되돌릴 분배 내역이 없습니다."
+
+# 3단계 추가 — 직업 선택 창 (지시서 13장)
+  job:
+    info:
+      name: "직업"
+      none: " 아직 고르지 않았습니다. ({level}레벨부터)"
+      current: " 현재: {job}"
+    entry:
+      name: "{job}"
+      current: "{job} (선택함)"
+      role: " 역할: {role}"
+      bonus: " 레벨당 {stat} +{value}"
+      selected: " 지금 이 직업입니다."
+      click: " 눌러서 고르기 (되돌릴 수 없음)"
+    selected: "직업을 {job}(으)로 정했습니다."
+    state:
+      ok: " 고를 수 있습니다."
+      no-jobs: "jobs.yml 에 직업 정의가 없습니다."
+      unknown-job: "그런 직업이 없습니다."
+      level-too-low: " 레벨이 모자랍니다."
+      already-selected: " 이미 골랐고 되돌릴 수 없습니다."

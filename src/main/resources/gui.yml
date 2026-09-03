@@ -8,7 +8,10 @@
 # 그 자리만 STONE 으로 대체하고 콘솔에 남긴다.
 #
 # 나머지 화면은 해당 단계에서 채운다.
-#   job : 3단계 / skill · bind : 4단계 / quest : 5단계
+#   job 화면 : 직업 id (jobs.yml 과 같은 이름) + info
+#
+# 나머지 화면은 해당 단계에서 채운다.
+#   skill · bind : 4단계 / quest : 5단계
 screens:
   stat:
     title: "스탯 분배"
@@ -22,9 +25,17 @@ screens:
       reset:     { slot: 16, material: BARRIER }
 
   job:
-    title: "직업"
+    title: "직업 선택"
     rows: 3
-    icons: {}
+    icons:
+      info:      { slot: 4,  material: PAPER }
+      swordsman: { slot: 10, material: IRON_SWORD }
+      archer:    { slot: 11, material: BOW }
+      alchemist: { slot: 12, material: SPLASH_POTION }
+      enchanter: { slot: 13, material: ENCHANTING_TABLE }
+      berserker: { slot: 14, material: IRON_AXE }
+      tamer:     { slot: 15, material: BONE }
+      trapper:   { slot: 16, material: TRIPWIRE_HOOK }
 
   skill:
     title: "스킬트리"

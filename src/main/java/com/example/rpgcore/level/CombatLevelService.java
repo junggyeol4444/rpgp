@@ -11,6 +11,7 @@ import com.example.rpgcore.player.data.PlayerData;
 import com.example.rpgcore.storage.dirty.SavePriority;
 import com.example.rpgcore.storage.dirty.SaveScheduler;
 import com.example.rpgcore.util.Messages;
+import java.util.function.Consumer;
 
 /**
  * 지시서 3장 [level/CombatLevelService] — 전투 레벨·경험치.
@@ -33,6 +34,12 @@ public final class CombatLevelService implements Lifecycle, Reloadable {
     private final Messages messages;
 
     private volatile ExpCurve curve = new ExpCurve.Exponential(100.0, 1.12);
+
+    /**
+     * 레벨이 바뀌었을 때 불릴 대상.
+     * 직업 보정이 레벨에 비례하므로(3단계) 파생 수치를 다시 계산해야 한다.
+     */
+    private Consumer<RpgPlayer> onLevelChanged = rpgPlayer -> { };
 
     public CombatLevelService(ConfigManager config, SaveScheduler saves, Messages messages) {
         this.config = config;
@@ -58,6 +65,15 @@ public final class CombatLevelService implements Lifecycle, Reloadable {
     private void rebuildCurve(ValidationReport report) {
         curve = ExpCurve.from(config.levels().combatCurve(), CurveSettings.defaultCombat(),
                 "levels.yml", "combat.curve", report);
+    }
+
+    /** 레벨이 바뀔 때 불릴 대상을 더한다. 등록 순서대로 불린다. */
+    public void onLevelChanged(Consumer<RpgPlayer> listener) {
+        Consumer<RpgPlayer> previous = this.onLevelChanged;
+        this.onLevelChanged = rpgPlayer -> {
+            previous.accept(rpgPlayer);
+            listener.accept(rpgPlayer);
+        };
     }
 
     /** 지금 쓰이는 곡선. */
@@ -135,6 +151,7 @@ public final class CombatLevelService implements Lifecycle, Reloadable {
         messages.send(target.player(), "level.exp-gain", "amount", format(amount));
         if (after > before) {
             messages.send(target.player(), "level.up", "before", before, "after", after);
+            onLevelChanged.accept(target);
         }
         return new Result(before, after, amount, statPointsGained, skillPointsGained);
     }
@@ -143,19 +160,25 @@ public final class CombatLevelService implements Lifecycle, Reloadable {
      * 레벨을 직접 지정한다. (/rpg admin setlevel)
      * 남은 경험치는 0으로 되돌린다.
      */
-    public void setLevel(PlayerData data, int level) {
+    public void setLevel(RpgPlayer target, int level) {
+        PlayerData data = target.data();
         int clamped = Math.max(1, level);
         LevelSettings settings = config.levels();
         if (settings.hasCombatMaxLevel()) {
             clamped = Math.min(clamped, settings.combatMaxLevel());
         }
+        boolean changed = data.combat().level() != clamped;
         data.combat().level(clamped);
         data.combat().exp(0);
         saves.markDirty(data, SavePriority.DEFERRED);
+        if (changed) {
+            onLevelChanged.accept(target);
+        }
     }
 
     /** 경험치를 직접 더하거나 뺀다. (/rpg admin exp) 레벨업 판정은 하지 않는다. */
-    public void addRawExp(PlayerData data, double amount) {
+    public void addRawExp(RpgPlayer target, double amount) {
+        PlayerData data = target.data();
         double next = data.combat().exp() + amount;
         data.combat().exp(Math.max(0, next));
         saves.markDirty(data, SavePriority.DEFERRED);

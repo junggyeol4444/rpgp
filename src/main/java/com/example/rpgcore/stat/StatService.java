@@ -6,6 +6,7 @@ import com.example.rpgcore.config.schema.StatSettings;
 import com.example.rpgcore.config.validation.ValidationReport;
 import com.example.rpgcore.core.Lifecycle;
 import com.example.rpgcore.core.Reloadable;
+import com.example.rpgcore.job.JobDefinition;
 import com.example.rpgcore.player.PlayerManager;
 import com.example.rpgcore.player.RpgPlayer;
 import com.example.rpgcore.player.data.PlayerData;
@@ -97,8 +98,9 @@ public final class StatService implements Lifecycle, Reloadable {
         for (DerivedStat stat : DerivedStat.values()) {
             builder.set(stat, settings.base(stat));
         }
+        JobDefinition job = config.jobs().tree().base(data.job().base());
         for (Map.Entry<String, StatType> entry : settings.stats().entrySet()) {
-            int points = data.combat().stat(entry.getKey());
+            int points = data.combat().stat(entry.getKey()) + jobBonus(job, entry.getKey(), data);
             if (points <= 0) {
                 continue;
             }
@@ -107,10 +109,30 @@ public final class StatService implements Lifecycle, Reloadable {
             }
         }
 
-        // TODO 3단계: 직업별 레벨업 스탯 보정을 여기에 더한다.
         // TODO 4단계: 스킬·장비로 붙는 보정을 여기에 더한다.
+        // TODO 8·9단계: 1차·2차 전직 보정을 여기에 더한다.
 
         return builder.build();
+    }
+
+    /**
+     * 직업이 주는 능력치 보정.
+     *
+     * <p>기획서 5장 [직업간 차별화 축]: 레벨업 시 스탯 보정 차이.
+     * jobs.yml 의 statBonusPerLevel 을 전투 레벨만큼 곱한다.
+     *
+     * <p>[확인 필요 — 밸런스]
+     * 기준을 "전투 레벨 전체"로 잡았다. 직업은 3레벨에 고르므로
+     * 고르기 전 레벨분도 함께 들어간다. 기획서에 기준이 적혀 있지
+     * 않아 가장 단순한 쪽을 택했다. 선택 이후 레벨만 세는 쪽이
+     * 맞다면 이 메서드만 고치면 된다.
+     */
+    private int jobBonus(JobDefinition job, String statId, PlayerData data) {
+        if (job == null) {
+            return 0;
+        }
+        int perLevel = job.statBonusPerLevel(statId);
+        return perLevel <= 0 ? 0 : perLevel * data.combat().level();
     }
 
     /** 캐시를 다시 만들고 등록된 쪽에 알린다. */

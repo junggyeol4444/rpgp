@@ -1,6 +1,7 @@
 package com.example.rpgcore.command.sub;
 
 import com.example.rpgcore.command.SubCommand;
+import com.example.rpgcore.job.JobService;
 import com.example.rpgcore.level.CombatLevelService;
 import com.example.rpgcore.player.PlayerManager;
 import com.example.rpgcore.player.RpgPlayer;
@@ -14,17 +15,20 @@ import org.bukkit.entity.Player;
  * 지시서 12장 — /rpg info, 현재 상태 요약.
  *
  * <p>단계가 올라갈 때마다 줄을 추가한다. (지시서 14장 [병행 작업])
- * 지금은 전투 레벨·경험치·남은 스탯 포인트까지다.
+ * 지금은 전투 레벨·경험치·남은 스탯 포인트·직업까지다.
  */
 public final class InfoCommand implements SubCommand {
 
     private final PlayerManager players;
     private final CombatLevelService levels;
+    private final JobService jobs;
     private final Messages messages;
 
-    public InfoCommand(PlayerManager players, CombatLevelService levels, Messages messages) {
+    public InfoCommand(PlayerManager players, CombatLevelService levels,
+                       JobService jobs, Messages messages) {
         this.players = players;
         this.levels = levels;
+        this.jobs = jobs;
         this.messages = messages;
     }
 
@@ -72,5 +76,13 @@ public final class InfoCommand implements SubCommand {
         }
         messages.sendPlain(sender, "command.info.stat-points",
                 "points", data.combat().statPoints());
+
+        String job = jobs.displayName(data);
+        if (job == null) {
+            messages.sendPlain(sender, "command.info.job-none",
+                    "level", jobs.settings().jobSelectLevel());
+        } else {
+            messages.sendPlain(sender, "command.info.job", "job", job);
+        }
     }
 }

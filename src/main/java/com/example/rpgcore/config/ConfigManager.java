@@ -3,6 +3,7 @@ package com.example.rpgcore.config;
 import com.example.rpgcore.config.schema.CombatSettings;
 import com.example.rpgcore.config.schema.CurveSettings;
 import com.example.rpgcore.config.schema.GuiIcon;
+import com.example.rpgcore.config.schema.JobSettings;
 import com.example.rpgcore.config.schema.GuiScreen;
 import com.example.rpgcore.config.schema.GeneralSettings;
 import com.example.rpgcore.config.schema.LevelSettings;
@@ -12,6 +13,9 @@ import com.example.rpgcore.config.schema.StorageSettings;
 import com.example.rpgcore.config.schema.UiSettings;
 import com.example.rpgcore.config.validation.ValidationReport;
 import com.example.rpgcore.core.Reloadable;
+import com.example.rpgcore.job.JobBranch;
+import com.example.rpgcore.job.JobDefinition;
+import com.example.rpgcore.job.JobTree;
 import com.example.rpgcore.level.ExpSource;
 import com.example.rpgcore.stat.DerivedStat;
 import com.example.rpgcore.stat.StatType;
@@ -73,6 +77,7 @@ public final class ConfigManager implements Reloadable {
     private volatile StatSettings stats = StatSettings.defaults();
     private volatile CombatSettings combat = CombatSettings.defaults();
     private volatile UiSettings ui = UiSettings.defaults();
+    private volatile JobSettings jobs = JobSettings.defaults();
     private volatile Map<String, GuiScreen> guiScreens = new LinkedHashMap<>();
     private volatile boolean debug;
     private volatile int lastErrorCount;
@@ -94,6 +99,7 @@ public final class ConfigManager implements Reloadable {
         loadGeneral(report);
         loadLevels(report);
         loadStats(report);
+        loadJobs(report);
         loadGui(report);
         loadMessages(report);
         this.lastErrorCount = report.errorCount();
@@ -122,6 +128,10 @@ public final class ConfigManager implements Reloadable {
 
     public UiSettings ui() {
         return ui;
+    }
+
+    public JobSettings jobs() {
+        return jobs;
     }
 
     /** gui.yml 의 화면. 없으면 기본 크기의 빈 화면을 준다. */
@@ -370,6 +380,111 @@ public final class ConfigManager implements Reloadable {
                 continue;
             }
             result.put(derived, section.getDouble(key, 0.0));
+        }
+        return result;
+    }
+
+    private void loadJobs(ValidationReport report) {
+        String file = "jobs.yml";
+        YamlConfiguration config = read(file, report);
+        if (config == null) {
+            jobs = JobSettings.defaults();
+            return;
+        }
+        JobSettings defaults = JobSettings.defaults();
+
+        int selectLevel = config.getInt("jobSelectLevel", defaults.jobSelectLevel());
+        if (selectLevel < 1) {
+            report.error(file, "jobSelectLevel",
+                    "1 이상이어야 해서 기본값으로 되돌립니다: " + selectLevel);
+            selectLevel = defaults.jobSelectLevel();
+        }
+        int tier1Level = config.getInt("tier1Level", defaults.tier1Level());
+        int tier2Level = config.getInt("tier2Level", defaults.tier2Level());
+        if (tier1Level <= selectLevel || tier2Level <= tier1Level) {
+            report.error(file, "tier1Level / tier2Level",
+                    "선택 레벨 < 1차 < 2차 순서여야 해서 기본값으로 되돌립니다: "
+                            + selectLevel + " / " + tier1Level + " / " + tier2Level);
+            tier1Level = defaults.tier1Level();
+            tier2Level = defaults.tier2Level();
+        }
+
+        Map<String, JobDefinition> baseJobs = new LinkedHashMap<>();
+        ConfigurationSection root = config.getConfigurationSection("jobs");
+        if (root == null) {
+            report.error(file, "jobs", "직업 정의가 없습니다. 직업 선택을 쓸 수 없습니다.");
+        } else {
+            int order = 0;
+            for (String id : root.getKeys(false)) {
+                ConfigurationSection section = root.getConfigurationSection(id);
+                if (section == null) {
+                    report.error(file, "jobs." + id, "형식이 맞지 않아 건너뜁니다.");
+                    continue;
+                }
+                baseJobs.put(id, new JobDefinition(id,
+                        section.getString("display", id),
+                        section.getString("role", id),
+                        readStatBonus(section.getConfigurationSection("statBonusPerLevel"),
+                                file, "jobs." + id + ".statBonusPerLevel", report),
+                        readBranches(section.getConfigurationSection("tier1"), "tier2",
+                                file, "jobs." + id + ".tier1", report),
+                        order++));
+            }
+        }
+
+        jobs = new JobSettings(new JobTree(baseJobs), selectLevel, tier1Level, tier2Level,
+                config.getString("tier1Quest", defaults.tier1Quest()),
+                config.getString("tier2Quest", defaults.tier2Quest()),
+                config.getBoolean("branchRevert", defaults.branchRevert()));
+    }
+
+    /** 능력치 id -> 레벨당 보정치. 능력치 이름 확인은 StatService 가 한다. */
+    private Map<String, Integer> readStatBonus(ConfigurationSection section, String file,
+                                               String path, ValidationReport report) {
+        Map<String, Integer> result = new LinkedHashMap<>();
+        if (section == null) {
+            return result;
+        }
+        for (String key : section.getKeys(false)) {
+            if (stats.stat(key) == null) {
+                // loadStats 가 먼저 돌기 때문에 여기서 능력치 이름을 검사할 수 있다.
+                report.error(file, path + "." + key,
+                        "stats.yml 에 없는 능력치라 건너뜁니다: " + key);
+                continue;
+            }
+            int value = section.getInt(key, 0);
+            if (value < 0) {
+                report.error(file, path + "." + key, "음수는 둘 수 없어 건너뜁니다: " + value);
+                continue;
+            }
+            result.put(key, value);
+        }
+        return result;
+    }
+
+    /**
+     * 전직 분기를 읽는다. 하위 키 이름만 바꿔 1차·2차에 같은 코드를 쓴다.
+     *
+     * @param childKey 하위 분기가 들어 있는 키 이름. 없으면 더 내려가지 않는다
+     */
+    private Map<String, JobBranch> readBranches(ConfigurationSection section, String childKey,
+                                                String file, String path,
+                                                ValidationReport report) {
+        Map<String, JobBranch> result = new LinkedHashMap<>();
+        if (section == null) {
+            return result;
+        }
+        for (String id : section.getKeys(false)) {
+            ConfigurationSection one = section.getConfigurationSection(id);
+            if (one == null) {
+                report.error(file, path + "." + id, "형식이 맞지 않아 건너뜁니다.");
+                continue;
+            }
+            Map<String, JobBranch> children = childKey == null
+                    ? Map.of()
+                    : readBranches(one.getConfigurationSection(childKey), null,
+                            file, path + "." + id + "." + childKey, report);
+            result.put(id, new JobBranch(id, one.getString("display", id), children));
         }
         return result;
     }

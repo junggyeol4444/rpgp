@@ -67,7 +67,7 @@ public final class ExpCommand implements AdminSubCommand {
             messages.send(sender, "admin.exp.given",
                     "player", target.getName(), "amount", CombatLevelService.format(amount));
         } else if (mode.equals("take")) {
-            levels.addRawExp(rpgPlayer.data(), -amount);
+            levels.addRawExp(rpgPlayer, -amount);
             messages.send(sender, "admin.exp.taken",
                     "player", target.getName(), "amount", CombatLevelService.format(amount));
         } else {

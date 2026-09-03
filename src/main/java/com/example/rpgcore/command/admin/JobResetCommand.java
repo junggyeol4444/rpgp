@@ -1,45 +1,45 @@
 package com.example.rpgcore.command.admin;
 
-import com.example.rpgcore.level.CombatLevelService;
+import com.example.rpgcore.job.JobService;
 import com.example.rpgcore.player.PlayerManager;
 import com.example.rpgcore.player.RpgPlayer;
 import com.example.rpgcore.util.CommandUtil;
 import com.example.rpgcore.util.Messages;
 import java.util.List;
-import org.bukkit.entity.Player;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 
-/** /rpg admin setlevel &lt;player&gt; &lt;level&gt; — 전투 레벨 설정. */
-public final class SetLevelCommand implements AdminSubCommand {
+/** /rpg admin jobreset &lt;player&gt; — 전직 상태 초기화. */
+public final class JobResetCommand implements AdminSubCommand {
 
     private final PlayerManager players;
-    private final CombatLevelService levels;
+    private final JobService jobs;
     private final Messages messages;
 
-    public SetLevelCommand(PlayerManager players, CombatLevelService levels, Messages messages) {
+    public JobResetCommand(PlayerManager players, JobService jobs, Messages messages) {
         this.players = players;
-        this.levels = levels;
+        this.jobs = jobs;
         this.messages = messages;
     }
 
     @Override
     public String name() {
-        return "setlevel";
+        return "jobreset";
     }
 
     @Override
     public String descriptionKey() {
-        return "command.admin.setlevel.desc";
+        return "command.admin.jobreset.desc";
     }
 
     @Override
     public String argHint() {
-        return "<player> <level>";
+        return "<player>";
     }
 
     @Override
     public void execute(CommandSender sender, String[] args) {
-        if (args.length < 2) {
+        if (args.length < 1) {
             messages.send(sender, "common.usage", "usage", usage());
             return;
         }
@@ -49,23 +49,14 @@ public final class SetLevelCommand implements AdminSubCommand {
             messages.send(sender, "common.unknown-player", "name", args[0]);
             return;
         }
-        Integer level = CommandUtil.parseInt(args[1]);
-        if (level == null) {
-            messages.send(sender, "common.invalid-number", "input", args[1]);
-            return;
-        }
-        levels.setLevel(rpgPlayer, level);
-        messages.send(sender, "admin.setlevel.done",
-                "player", target.getName(),
-                "level", rpgPlayer.data().combat().level());
+        jobs.reset(rpgPlayer);
+        messages.send(sender, "admin.jobreset.done", "player", target.getName());
     }
 
     @Override
     public List<String> complete(CommandSender sender, String[] args) {
-        return args.length <= 1 ? onlineNames() : List.of();
-    }
-
-    private List<String> onlineNames() {
-        return players.onlinePlayers().stream().map(p -> p.player().getName()).toList();
+        return args.length <= 1
+                ? players.onlinePlayers().stream().map(p -> p.player().getName()).toList()
+                : List.of();
     }
 }

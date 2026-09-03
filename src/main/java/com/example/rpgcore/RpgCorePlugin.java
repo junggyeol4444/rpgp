@@ -9,19 +9,23 @@ import com.example.rpgcore.command.admin.DataDumpCommand;
 import com.example.rpgcore.command.admin.DataResetCommand;
 import com.example.rpgcore.command.admin.DebugCommand;
 import com.example.rpgcore.command.admin.ExpCommand;
+import com.example.rpgcore.command.admin.JobResetCommand;
 import com.example.rpgcore.command.admin.ReloadCommand;
 import com.example.rpgcore.command.admin.SaveCommand;
+import com.example.rpgcore.command.admin.SetJobCommand;
 import com.example.rpgcore.command.admin.SetLevelCommand;
 import com.example.rpgcore.command.admin.StatPointCommand;
 import com.example.rpgcore.command.admin.StatResetCommand;
 import com.example.rpgcore.command.admin.StatusCommand;
 import com.example.rpgcore.command.sub.InfoCommand;
+import com.example.rpgcore.command.sub.JobCommand;
 import com.example.rpgcore.command.sub.StatCommand;
 import com.example.rpgcore.config.ConfigManager;
 import com.example.rpgcore.config.validation.ValidationReport;
 import com.example.rpgcore.core.BukkitMainThreadExecutor;
 import com.example.rpgcore.core.MainThreadExecutor;
 import com.example.rpgcore.core.ServiceRegistry;
+import com.example.rpgcore.job.JobService;
 import com.example.rpgcore.level.CombatLevelService;
 import com.example.rpgcore.player.PlayerManager;
 import com.example.rpgcore.stat.StatService;
@@ -54,8 +58,9 @@ import org.bukkit.plugin.java.JavaPlugin;
  * <p>서비스를 만들어 {@link ServiceRegistry} 에 등록하고 순서대로 켠다.
  * 게임 로직은 각 서비스에 둔다.
  *
- * <p>현재 범위는 지시서 14장의 1단계(골격과 전투 레벨)와
- * 2단계(스탯과 전투)다. 직업·스킬·퀘스트는 아직 없다.
+ * <p>현재 범위는 지시서 14장의 1단계(골격과 전투 레벨),
+ * 2단계(스탯과 전투), 3단계(기본 직업)다.
+ * 전직·스킬·퀘스트는 아직 없다.
  */
 public final class RpgCorePlugin extends JavaPlugin {
 
@@ -92,6 +97,8 @@ public final class RpgCorePlugin extends JavaPlugin {
                 new PlayerManager(cache, saves, messages, getLogger()));
         StatService stats = registry.register(StatService.class,
                 new StatService(config, saves, players));
+        JobService jobs = registry.register(JobService.class,
+                new JobService(config, saves, stats));
         HealthService health = registry.register(HealthService.class, new HealthService());
         DamagePipeline pipeline = registry.register(DamagePipeline.class,
                 new DamagePipeline(config, getLogger()));
@@ -107,6 +114,8 @@ public final class RpgCorePlugin extends JavaPlugin {
 
         // 파생 수치가 바뀌면 내부 HP 상한도 따라 움직여야 한다. (지시서 9장)
         stats.onRecalculated(health::onStatsChanged);
+        // 직업 보정이 레벨에 비례하므로 레벨이 오르면 다시 계산한다. (3단계)
+        levels.onLevelChanged(stats::refresh);
 
         players.onAttach(rpgPlayer -> {
             stats.refresh(rpgPlayer);
@@ -125,14 +134,15 @@ public final class RpgCorePlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(
                 new CombatListener(config, players, pipeline, health), this);
 
-        if (!registerCommands(config, repository, saves, levels, players, stats, guis, messages)) {
+        if (!registerCommands(config, repository, saves, levels, players, stats, jobs,
+                guis, messages)) {
             getLogger().severe("명령어를 등록하지 못했습니다. plugin.yml 의 commands 항목을 확인하세요.");
         }
 
         // 서버가 돌아가는 중에 켜졌다면 이미 접속해 있는 플레이어가 있다.
         players.loadOnlinePlayers();
 
-        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~2단계)");
+        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~3단계)");
     }
 
     @Override
@@ -153,6 +163,7 @@ public final class RpgCorePlugin extends JavaPlugin {
                                      CombatLevelService levels,
                                      PlayerManager players,
                                      StatService stats,
+                                     JobService jobs,
                                      GuiManager guis,
                                      Messages messages) {
         AdminCommand admin = new AdminCommand(messages);
@@ -164,12 +175,15 @@ public final class RpgCorePlugin extends JavaPlugin {
                 .register(new ExpCommand(players, levels, messages))
                 .register(new StatPointCommand(players, stats, messages))
                 .register(new StatResetCommand(players, stats, messages))
+                .register(new SetJobCommand(players, jobs, messages))
+                .register(new JobResetCommand(players, jobs, messages))
                 .register(new DataDumpCommand(players, messages))
                 .register(new DataResetCommand(players, messages));
 
         RpgCommand root = new RpgCommand(messages);
-        root.register(new InfoCommand(players, levels, messages));
+        root.register(new InfoCommand(players, levels, jobs, messages));
         root.register(new StatCommand(config, players, stats, guis, messages));
+        root.register(new JobCommand(config, players, jobs, guis, messages));
         root.register(admin);
 
         PluginCommand command = getCommand(PluginIds.ROOT_COMMAND);
