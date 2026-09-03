@@ -1,0 +1,34 @@
+# 지시서 8장 [skills.yml]
+#
+# 지시서 6장: 파일 분리가 필요한 항목(skills, quests)은 디렉터리 스캔
+# 방식을 지원한다. skills/ 디렉터리에 파일을 두면 함께 읽힌다.
+#
+# 아래는 지시서에 실린 예시 정의 하나뿐이다.
+# 실제 스킬 정의는 4단계(스킬 코어)에서 작성한다.
+skills:
+  example_slash:
+    display: "예시 베기"
+    job: swordsman            # 소속 직업 id
+    stage: BASE               # BASE | TIER1 | TIER2
+    tree:
+      parent: null            # 선행 스킬 id
+      branch: null            # 분기 그룹 id (같은 그룹은 택일)
+    cost:
+      mana: 20
+      manaPerLevel: 0.5
+    cooldown:
+      seconds: 6.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 30.0
+      scaling:
+        type: DIMINISHING     # 고레벨 상승폭 완만
+        coefficient: 4.0      # power = base + coefficient * f(level)
+        exponent: 0.5         # f(level) = level ^ exponent
+      statScaling:
+        strength: 1.2
+    effects:
+      - type: DAMAGE_CONE
+        range: 4.0
+        angle: 90

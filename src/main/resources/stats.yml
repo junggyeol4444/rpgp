@@ -1,0 +1,28 @@
+# 지시서 8장 [stats.yml]
+stats:
+  strength:
+    display: "힘"
+    derived:
+      physicalDamage: 2.0      # 1포인트당 증가량
+  agility:
+    display: "민첩"
+    derived:
+      critChance: 0.15
+      attackSpeed: 0.01
+  intellect:
+    display: "지능"
+    derived:
+      magicDamage: 2.0
+      maxMana: 5.0
+  vitality:
+    display: "체력"
+    derived:
+      maxHealth: 10.0
+      defense: 1.0
+
+reset:
+  allowed: true
+  cost:
+    currency: "dungeon_coin"
+    amount: 50
+  scaling: 1.5             # 리셋 횟수마다 비용 배수

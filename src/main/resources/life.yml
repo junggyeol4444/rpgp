@@ -1,0 +1,28 @@
+# 지시서 8장 [life.yml]
+tracks:
+  living:
+    display: "생활"
+    sources:
+      BLOCK_BREAK: { LOG: 5, WHEAT: 3 }
+      FISHING: 8
+      COOKING: 6
+  mining:
+    display: "채광"
+    sources:
+      BLOCK_BREAK: { IRON_ORE: 10, DIAMOND_ORE: 40 }
+  crafting:
+    display: "제작"
+    sources:
+      CRAFT: 4
+  alchemy:
+    display: "연금"
+    sources:
+      BREW: 12
+
+# 트랙별 레벨업 보상
+rewards:
+  living:
+    efficiency:
+      gatherSpeed: 0.005    # 레벨당 비율
+    unlockAtLevel:
+      10: ["recipe_example"]

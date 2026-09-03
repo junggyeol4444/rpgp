@@ -1,0 +1,24 @@
+# 지시서 13장 [GUI 화면]
+# 화면 구성(제목, 크기, 아이콘 위치)은 전부 이 파일에서 읽는다.
+#
+# 실제 화면 정의는 해당 단계에서 채운다.
+#   stat   : 2단계
+#   job    : 3단계
+#   skill / bind : 4단계
+#   quest  : 5단계
+screens:
+  stat:
+    title: "스탯 분배"
+    rows: 3
+  job:
+    title: "직업"
+    rows: 3
+  skill:
+    title: "스킬트리"
+    rows: 6
+  bind:
+    title: "스킬 등록"
+    rows: 3
+  quest:
+    title: "퀘스트"
+    rows: 6

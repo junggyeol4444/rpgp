@@ -1,0 +1,21 @@
+# 지시서 8장 [levels.yml]
+combat:
+  curve:
+    type: EXPONENTIAL
+    base: 100            # 1→2레벨 요구치
+    factor: 1.12         # 레벨당 배수
+  maxLevel: -1           # -1 = 상한 없음
+  rewardPerLevel:
+    statPoints: 5
+    skillPoints: 1
+  expSources:
+    mobKill: true
+    questComplete: true
+    dungeonClear: true
+
+life:
+  maxLevel: -1
+  curve:
+    type: EXPONENTIAL
+    base: 50
+    factor: 1.10

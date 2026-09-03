@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.example'
+version = '0.1.0-SNAPSHOT'
+
+// 지시서 1장 / 2장: Java toolchain 25 고정
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    mavenCentral()
+
+    // TODO [검증 1 - 지시서 16장] Paper 저장소 URL을 실제로 확인한 뒤 추가한다.
+    //      기억으로 적지 말 것. 확인 전까지는 비워 둔다.
+    // maven { url = '<확인 후 기입>' }
+}
+
+dependencies {
+    // TODO [검증 1 - 지시서 16장] paper-api 의존성 좌표와 버전 문자열을
+    //      26.x 기준으로 실제 저장소에서 확인한 뒤 적는다.
+    //      확인 전까지 주석 상태이므로 이 프로젝트는 컴파일되지 않는다.
+    // compileOnly 'io.papermc.paper:paper-api:<확인 후 기입>'
+}
+
+// 지시서 2장: 인코딩 UTF-8 고정
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('processResources') {
+    filteringCharset = 'UTF-8'
+    // 버전 문자열이 build.gradle과 plugin.yml 두 곳에 흩어지지 않도록 주입한다.
+    filesMatching('plugin.yml') {
+        expand(pluginVersion: project.version)
+    }
+}
+
+// 지시서 2장: shadow 사용 여부는 외부 라이브러리 도입 시 결정한다.
+//             현재 런타임 라이브러리 의존이 없으므로 도입하지 않는다.

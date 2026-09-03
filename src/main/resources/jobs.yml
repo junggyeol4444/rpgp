@@ -1,0 +1,128 @@
+# 지시서 8장 [jobs.yml] / 기획서 5장 [분기 구성 - 확정]
+#
+# 직업 id는 지시서 8장 주석의 매핑을 그대로 쓴다.
+# display 는 기획서 5장의 역할 이름이며, 기획서 TBD 1번(직업 이름과
+# 세계관 설정)이 정해지면 이 값만 교체하면 된다. 코드는 id만 참조한다.
+jobSelectLevel: 3
+tier1Level: 20
+tier2Level: 50
+tier1Quest: "job_advance_1"   # 전직 퀘스트 id
+tier2Quest: "job_advance_2"
+branchRevert: false           # 분기 되돌리기 불가
+
+jobs:
+  swordsman:
+    display: "근접 검"
+    role: MELEE_SWORD
+    # 지시서 8장 예시값. 나머지 6개 직업의 보정치는 밸런스 미정이라
+    # 비워 둔다. (3단계에서 채운다)
+    statBonusPerLevel:
+      strength: 2
+      vitality: 1
+    tier1:
+      guardian:
+        display: "방어형"
+        tier2:
+          counter:  { display: "반격 특화" }
+          protect:  { display: "수호" }
+      swift:
+        display: "속공형"
+        tier2:
+          combo:    { display: "연타 특화" }
+          critical: { display: "급소" }
+
+  archer:
+    display: "원거리"
+    role: RANGED
+    statBonusPerLevel: {}       # TODO 3단계에서 결정
+    tier1:
+      precision:
+        display: "정밀형"
+        tier2:
+          sniper: { display: "장거리 저격" }
+          pierce: { display: "관통" }
+      rapid:
+        display: "연사형"
+        tier2:
+          multishot: { display: "다중 사격" }
+          mobile:    { display: "이동 사격" }
+
+  alchemist:
+    display: "물약"
+    role: POTION
+    statBonusPerLevel: {}       # TODO 3단계에서 결정
+    tier1:
+      throw:
+        display: "투척형"
+        tier2:
+          corrode: { display: "부식" }
+          explode: { display: "폭발" }
+      brew:
+        display: "조제형"
+        tier2:
+          selfbuff: { display: "자기 강화" }
+          regen:    { display: "지속 회복" }
+
+  enchanter:
+    display: "인챈트"
+    role: ENCHANT
+    statBonusPerLevel: {}       # TODO 3단계에서 결정
+    tier1:
+      weapon:
+        display: "무기 부여"
+        tier2:
+          element:    { display: "원소 부여" }
+          overcharge: { display: "일시 초강화" }
+      armor:
+        display: "방어 부여"
+        tier2:
+          resist:  { display: "저항·내구" }
+          reflect: { display: "반사" }
+
+  berserker:
+    display: "광폭 근접"
+    role: MELEE_BERSERK
+    statBonusPerLevel: {}       # TODO 3단계에서 결정
+    tier1:
+      rage:
+        display: "분노형"
+        tier2:
+          frenzy:    { display: "폭주" }
+          lifesteal: { display: "흡혈" }
+      sweep:
+        display: "광역형"
+        tier2:
+          spin:      { display: "회전 광역" }
+          shockwave: { display: "충격파·넉백" }
+
+  tamer:
+    display: "펫"
+    role: PET
+    statBonusPerLevel: {}       # TODO 3단계에서 결정
+    tier1:
+      battle:
+        display: "전투 펫"
+        tier2:
+          single: { display: "단일 강화 펫" }
+          multi:  { display: "다수 소환" }
+      support:
+        display: "보조 펫"
+        tier2:
+          buff:  { display: "버프 펫" }
+          scout: { display: "정찰·유틸 펫" }
+
+  trapper:
+    display: "설치·함정"
+    role: TRAP
+    statBonusPerLevel: {}       # TODO 3단계에서 결정
+    tier1:
+      offense:
+        display: "공격 설치"
+        tier2:
+          turret: { display: "포탑" }
+          mine:   { display: "지뢰·함정" }
+      support:
+        display: "지원 설치"
+        tier2:
+          barrier: { display: "결계·영역" }
+          utility: { display: "이동·설치 유틸" }

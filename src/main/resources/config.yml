@@ -1,0 +1,14 @@
+# 전역 설정
+storage:
+  # 저장소 구현. 지시서 5장 [교체 가능성] 참조.
+  # 현재 구현체는 YAML 뿐이다.
+  type: YAML
+  # 지연 저장(주기 저장) 간격. 지시서 5장 기본 5분.
+  autoSaveIntervalSeconds: 300
+  # 저장/로드 비동기 처리에 사용할 스레드 수.
+  ioThreads: 2
+
+debug:
+  # /rpg admin debug <on|off> 로도 토글된다.
+  # 켜면 데미지 계산 과정을 로그로 출력한다. (2단계에서 사용)
+  enabled: false

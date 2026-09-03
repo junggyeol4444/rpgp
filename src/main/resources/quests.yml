@@ -1,0 +1,28 @@
+# 지시서 8장 [quests.yml]
+#
+# 지시서 6장: quests 도 디렉터리 스캔을 지원한다.
+# quests/ 디렉터리에 파일을 두면 함께 읽힌다.
+# 실제 퀘스트 정의는 5단계에서 작성한다.
+quests:
+  example_quest:
+    display: "예시 퀘스트"
+    type: NORMAL              # NORMAL | MAIN | DAILY | WEEKLY
+    requireLevel: 5
+    requireJob: null
+    objectives:
+      - type: KILL
+        target: "ZOMBIE"
+        amount: 10
+      - type: COLLECT
+        item: "ROTTEN_FLESH"
+        amount: 5
+      - type: REACH
+        region: "start_field"
+      - type: TALK
+        npc: "village_elder"
+    rewards:
+      combatExp: 200
+      skillPoints: 1
+      currency:
+        dungeon_coin: 10
+    repeatable: false

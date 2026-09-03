@@ -1,0 +1,7 @@
+# 지시서 8장 [regions.yml]
+regions:
+  start_field:
+    display: "시작 평원"
+    world: "world"
+    bounds: { x1: 0, z1: 0, x2: 500, z2: 500 }
+    levelRange: { min: 1, max: 10 }

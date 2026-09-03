@@ -1,0 +1,82 @@
+# ================================================================
+# RpgCore plugin.yml
+# ----------------------------------------------------------------
+# [검증 2 - 지시서 16장]
+#   26.x에서 plugin.yml 방식과 paper-plugin.yml 방식 중 어느 쪽이
+#   권장되는지 확인한 뒤 선택한다. 현재는 plugin.yml로 두었으나
+#   확정된 것이 아니다.
+#
+# [검증 3 - 지시서 16장]
+#   api-version 값의 형식(패치 단위까지 올라가는지)과 하위 호환
+#   범위를 확인한 뒤 아래 api-version 줄의 주석을 풀고 값을 넣는다.
+#   26.x 전 버전 호환이 목표이므로 이 값이 호환 범위를 좌우한다.
+#   값을 넣기 전까지 이 플러그인은 서버에 로드되지 않는다.
+# ================================================================
+name: RpgCore
+version: '${pluginVersion}'
+main: com.example.rpgcore.RpgCorePlugin
+description: RPG core systems for Paper
+author: junggyeol4444
+
+# TODO [검증 3] 실제 확인한 값으로 교체
+# api-version: '<확인 후 기입>'
+
+# 지시서 0장 6번 / 15장: 외부 플러그인은 전부 soft-depend.
+# 해당 플러그인이 없어도 서버가 뜨고 그 기능만 비활성화된다.
+softdepend:
+  - Vault
+  - VaultUnlocked
+  - Citizens
+  - PlaceholderAPI
+
+# 지시서 2장 / 12장: 명령어는 /rpg 하나만 등록하고 하위 명령은 코드에서 분기
+commands:
+  rpg:
+    description: RpgCore root command
+    usage: /rpg
+
+permissions:
+  # 지시서 12장 [권한 노드]
+  # 1단계에서 실제로 존재하는 명령만 선언한다.
+  # 명령이 늘어나면 해당 단계에서 노드를 함께 추가한다.
+  rpgcore.command.*:
+    description: 플레이어 명령 전체
+    default: true
+    children:
+      rpgcore.command.info: true
+  rpgcore.command.info:
+    description: /rpg info
+    default: true
+
+  rpgcore.admin:
+    description: /rpg admin 진입
+    default: op
+  rpgcore.admin.*:
+    description: 관리자 명령 전체
+    default: op
+    children:
+      rpgcore.admin: true
+      rpgcore.admin.reload: true
+      rpgcore.admin.save: true
+      rpgcore.admin.status: true
+      rpgcore.admin.debug: true
+      rpgcore.admin.setlevel: true
+      rpgcore.admin.exp: true
+      rpgcore.admin.datadump: true
+      rpgcore.admin.datareset: true
+  rpgcore.admin.reload:
+    default: op
+  rpgcore.admin.save:
+    default: op
+  rpgcore.admin.status:
+    default: op
+  rpgcore.admin.debug:
+    default: op
+  rpgcore.admin.setlevel:
+    default: op
+  rpgcore.admin.exp:
+    default: op
+  rpgcore.admin.datadump:
+    default: op
+  rpgcore.admin.datareset:
+    default: op
