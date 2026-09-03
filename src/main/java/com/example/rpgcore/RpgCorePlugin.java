@@ -16,6 +16,9 @@ import com.example.rpgcore.command.admin.JobResetCommand;
 import com.example.rpgcore.command.admin.ReloadCommand;
 import com.example.rpgcore.command.admin.SaveCommand;
 import com.example.rpgcore.command.admin.BindResetCommand;
+import com.example.rpgcore.command.admin.QuestAdminCommand;
+import com.example.rpgcore.command.admin.QuestCycleCommand;
+import com.example.rpgcore.command.admin.QuestResetCommand;
 import com.example.rpgcore.command.admin.SetJobCommand;
 import com.example.rpgcore.command.admin.SetLevelCommand;
 import com.example.rpgcore.command.admin.StatPointCommand;
@@ -26,6 +29,7 @@ import com.example.rpgcore.command.admin.StatusCommand;
 import com.example.rpgcore.command.sub.InfoCommand;
 import com.example.rpgcore.command.sub.BindCommand;
 import com.example.rpgcore.command.sub.JobCommand;
+import com.example.rpgcore.command.sub.QuestCommand;
 import com.example.rpgcore.command.sub.SkillCommand;
 import com.example.rpgcore.command.sub.StatCommand;
 import com.example.rpgcore.config.ConfigManager;
@@ -36,6 +40,13 @@ import com.example.rpgcore.core.ServiceRegistry;
 import com.example.rpgcore.job.JobService;
 import com.example.rpgcore.level.CombatLevelService;
 import com.example.rpgcore.player.PlayerManager;
+import com.example.rpgcore.npc.NoNpcBridge;
+import com.example.rpgcore.npc.NpcBridge;
+import com.example.rpgcore.quest.QuestService;
+import com.example.rpgcore.quest.objective.ObjectiveListener;
+import com.example.rpgcore.quest.objective.ObjectiveTracker;
+import com.example.rpgcore.quest.reward.RewardService;
+import com.example.rpgcore.region.RegionService;
 import com.example.rpgcore.skill.SkillService;
 import com.example.rpgcore.skill.cooldown.CooldownService;
 import com.example.rpgcore.skill.effect.DamageAreaExecutor;
@@ -75,8 +86,8 @@ import org.bukkit.plugin.java.JavaPlugin;
  * 게임 로직은 각 서비스에 둔다.
  *
  * <p>현재 범위는 지시서 14장의 1단계(골격과 전투 레벨),
- * 2단계(스탯과 전투), 3단계(기본 직업), 4단계(스킬 코어)다.
- * 전직과 퀘스트는 아직 없다.
+ * 2단계(스탯과 전투), 3단계(기본 직업), 4단계(스킬 코어),
+ * 5단계(퀘스트)다. 전직과 경제·생활 트랙은 아직 없다.
  */
 public final class RpgCorePlugin extends JavaPlugin {
 
@@ -134,6 +145,15 @@ public final class RpgCorePlugin extends JavaPlugin {
         BindingService bindings = registry.register(BindingService.class,
                 new BindingService(config, saves, skills, skillItems));
 
+        RegionService regions = registry.register(RegionService.class,
+                new RegionService(config));
+        RewardService rewards = new RewardService(levels, saves);
+        QuestService quests = registry.register(QuestService.class,
+                new QuestService(config, saves, rewards, messages));
+        ObjectiveTracker objectives = new ObjectiveTracker(quests);
+        // 지시서 16장 6번이 확인될 때까지 NPC 연동은 비어 있는 구현을 쓴다.
+        NpcBridge npcs = new NoNpcBridge();
+
         GuiManager guis = registry.register(GuiManager.class, new GuiManager(players));
         HudService hud = registry.register(HudService.class,
                 new HudService(players, mainThread, getLogger(),
@@ -153,6 +173,8 @@ public final class RpgCorePlugin extends JavaPlugin {
             stats.refresh(rpgPlayer);
             health.initialize(rpgPlayer);
             hud.attach(rpgPlayer);
+            // 접속할 때 일일·주간 주기가 지났는지 본다.
+            quests.applyCycles(rpgPlayer, System.currentTimeMillis());
         });
         players.onDetach(rpgPlayer -> {
             hud.detach(rpgPlayer);
@@ -169,16 +191,18 @@ public final class RpgCorePlugin extends JavaPlugin {
                 new CombatListener(config, players, pipeline, health), this);
         getServer().getPluginManager().registerEvents(
                 new InputListener(players, bindings, skills, skillItems, messages), this);
+        getServer().getPluginManager().registerEvents(
+                new ObjectiveListener(players, objectives, regions, npcs), this);
 
         if (!registerCommands(config, repository, saves, levels, players, stats, jobs,
-                skills, bindings, guis, messages)) {
+                skills, bindings, quests, guis, messages)) {
             getLogger().severe("명령어를 등록하지 못했습니다. plugin.yml 의 commands 항목을 확인하세요.");
         }
 
         // 서버가 돌아가는 중에 켜졌다면 이미 접속해 있는 플레이어가 있다.
         players.loadOnlinePlayers();
 
-        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~4단계)");
+        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~5단계)");
     }
 
     @Override
@@ -202,6 +226,7 @@ public final class RpgCorePlugin extends JavaPlugin {
                                      JobService jobs,
                                      SkillService skills,
                                      BindingService bindings,
+                                     QuestService quests,
                                      GuiManager guis,
                                      Messages messages) {
         AdminCommand admin = new AdminCommand(messages);
@@ -218,6 +243,9 @@ public final class RpgCorePlugin extends JavaPlugin {
                 .register(new SkillPointCommand(players, skills, messages))
                 .register(new SkillAdminCommand(players, skills, messages))
                 .register(new BindResetCommand(players, bindings, messages))
+                .register(new QuestAdminCommand(players, quests, messages))
+                .register(new QuestResetCommand(players, quests, messages))
+                .register(new QuestCycleCommand(players, quests, messages))
                 .register(new DataDumpCommand(players, messages))
                 .register(new DataResetCommand(players, messages));
 
@@ -227,6 +255,7 @@ public final class RpgCorePlugin extends JavaPlugin {
         root.register(new JobCommand(config, players, jobs, guis, messages));
         root.register(new SkillCommand(config, players, skills, guis, messages));
         root.register(new BindCommand(config, players, bindings, skills, guis, messages));
+        root.register(new QuestCommand(config, players, quests, guis, messages));
         root.register(admin);
 
         PluginCommand command = getCommand(PluginIds.ROOT_COMMAND);

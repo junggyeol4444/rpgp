@@ -18,6 +18,12 @@ import com.example.rpgcore.job.JobBranch;
 import com.example.rpgcore.job.JobDefinition;
 import com.example.rpgcore.job.JobTree;
 import com.example.rpgcore.level.ExpSource;
+import com.example.rpgcore.quest.QuestDefinition;
+import com.example.rpgcore.quest.QuestType;
+import com.example.rpgcore.quest.objective.Objective;
+import com.example.rpgcore.quest.objective.ObjectiveType;
+import com.example.rpgcore.quest.reward.QuestReward;
+import com.example.rpgcore.region.RegionDefinition;
 import com.example.rpgcore.skill.PowerScaling;
 import com.example.rpgcore.skill.SkillDefinition;
 import com.example.rpgcore.skill.SkillStage;
@@ -63,6 +69,9 @@ public final class ConfigManager implements Reloadable {
     /** 스킬 정의를 나눠 담는 디렉터리. (지시서 6장) */
     private static final String SKILL_DIRECTORY = "skills";
 
+    /** 퀘스트 정의를 나눠 담는 디렉터리. (지시서 6장) */
+    private static final String QUEST_DIRECTORY = "quests";
+
     private static final List<String> DEFAULT_FILES = List.of(
             "config.yml",
             "levels.yml",
@@ -77,7 +86,6 @@ public final class ConfigManager implements Reloadable {
             "gui.yml",
             "messages.yml");
 
-    // TODO 5단계: quests 도 디렉터리 스캔을 지원해야 한다. (지시서 6장)
 
     private final Plugin plugin;
     private final Logger logger;
@@ -91,6 +99,8 @@ public final class ConfigManager implements Reloadable {
     private volatile JobSettings jobs = JobSettings.defaults();
     private volatile SkillSettings skill = SkillSettings.defaults();
     private volatile SkillTree skillTree = SkillTree.empty();
+    private volatile Map<String, QuestDefinition> quests = new LinkedHashMap<>();
+    private volatile Map<String, RegionDefinition> regions = new LinkedHashMap<>();
     private volatile Map<String, GuiScreen> guiScreens = new LinkedHashMap<>();
     private volatile boolean debug;
     private volatile int lastErrorCount;
@@ -114,6 +124,8 @@ public final class ConfigManager implements Reloadable {
         loadStats(report);
         loadJobs(report);
         loadSkills(report);
+        loadRegions(report);
+        loadQuests(report);
         loadGui(report);
         loadMessages(report);
         this.lastErrorCount = report.errorCount();
@@ -154,6 +166,16 @@ public final class ConfigManager implements Reloadable {
 
     public SkillTree skillTree() {
         return skillTree;
+    }
+
+    /** quests.yml 과 quests/ 디렉터리에서 읽은 퀘스트. */
+    public Map<String, QuestDefinition> quests() {
+        return quests;
+    }
+
+    /** regions.yml 에서 읽은 지역. */
+    public Map<String, RegionDefinition> regions() {
+        return regions;
     }
 
     /** gui.yml 의 화면. 없으면 기본 크기의 빈 화면을 준다. */
@@ -199,9 +221,12 @@ public final class ConfigManager implements Reloadable {
         if (!folder.exists() && !folder.mkdirs()) {
             logger.warning("플러그인 폴더를 만들지 못했습니다: " + folder.getAbsolutePath());
         }
-        File skillDirectory = new File(folder, SKILL_DIRECTORY);
-        if (!skillDirectory.exists() && !skillDirectory.mkdirs()) {
-            logger.warning("skills 디렉터리를 만들지 못했습니다: " + skillDirectory.getAbsolutePath());
+        for (String name : List.of(SKILL_DIRECTORY, QUEST_DIRECTORY)) {
+            File directory = new File(folder, name);
+            if (!directory.exists() && !directory.mkdirs()) {
+                logger.warning(name + " 디렉터리를 만들지 못했습니다: "
+                        + directory.getAbsolutePath());
+            }
         }
         for (String name : DEFAULT_FILES) {
             File target = new File(folder, name);
@@ -722,6 +747,181 @@ public final class ConfigManager implements Reloadable {
                 parsed.remove(skillDefinition.id());
             }
         }
+    }
+
+    private void loadRegions(ValidationReport report) {
+        String file = "regions.yml";
+        Map<String, RegionDefinition> parsed = new LinkedHashMap<>();
+        YamlConfiguration config = read(file, report);
+        if (config == null) {
+            regions = parsed;
+            return;
+        }
+        ConfigurationSection root = config.getConfigurationSection("regions");
+        if (root == null) {
+            report.error(file, "regions", "지역 정의가 없습니다.");
+            regions = parsed;
+            return;
+        }
+        for (String id : root.getKeys(false)) {
+            ConfigurationSection section = root.getConfigurationSection(id);
+            if (section == null) {
+                report.error(file, "regions." + id, "형식이 맞지 않아 건너뜁니다.");
+                continue;
+            }
+            String world = section.getString("world", null);
+            if (world == null) {
+                report.error(file, "regions." + id + ".world", "월드 이름이 없어 건너뜁니다.");
+                continue;
+            }
+            int min = section.getInt("levelRange.min", 1);
+            int max = section.getInt("levelRange.max", min);
+            parsed.put(id, RegionDefinition.of(id,
+                    section.getString("display", id), world,
+                    section.getDouble("bounds.x1", 0), section.getDouble("bounds.z1", 0),
+                    section.getDouble("bounds.x2", 0), section.getDouble("bounds.z2", 0),
+                    min, max));
+        }
+        regions = parsed;
+    }
+
+    /**
+     * 지시서 6장: quests 도 디렉터리 스캔을 지원한다.
+     * quests.yml 을 먼저 읽고 quests/ 디렉터리의 .yml 을 이름 순으로 덧붙인다.
+     */
+    private void loadQuests(ValidationReport report) {
+        Map<String, QuestDefinition> parsed = new LinkedHashMap<>();
+        readQuestFile(new File(plugin.getDataFolder(), "quests.yml"), "quests.yml",
+                parsed, report);
+
+        File directory = new File(plugin.getDataFolder(), QUEST_DIRECTORY);
+        File[] extra = directory.isDirectory() ? directory.listFiles() : null;
+        if (extra != null) {
+            Arrays.sort(extra, Comparator.comparing(File::getName));
+            for (File file : extra) {
+                if (file.isFile() && file.getName().endsWith(".yml")) {
+                    readQuestFile(file, QUEST_DIRECTORY + "/" + file.getName(), parsed, report);
+                }
+            }
+        }
+        quests = parsed;
+    }
+
+    private void readQuestFile(File file, String label,
+                               Map<String, QuestDefinition> target, ValidationReport report) {
+        if (!file.isFile()) {
+            return;
+        }
+        YamlConfiguration config = YamlConfiguration.loadConfiguration(file);
+        ConfigurationSection root = config.getConfigurationSection("quests");
+        if (root == null) {
+            report.error(label, "quests", "퀘스트 정의가 없습니다.");
+            return;
+        }
+        for (String id : root.getKeys(false)) {
+            ConfigurationSection section = root.getConfigurationSection(id);
+            if (section == null) {
+                report.error(label, "quests." + id, "형식이 맞지 않아 건너뜁니다.");
+                continue;
+            }
+            if (target.containsKey(id)) {
+                report.error(label, "quests." + id, "다른 파일에 이미 있는 퀘스트 id 라 건너뜁니다.");
+                continue;
+            }
+            QuestDefinition quest = readQuest(id, section, label, report);
+            if (quest != null) {
+                target.put(id, quest);
+            }
+        }
+    }
+
+    /** 한 퀘스트를 읽는다. 해석할 수 없으면 null 을 주고 그 퀘스트만 빠진다. */
+    private QuestDefinition readQuest(String id, ConfigurationSection section,
+                                      String label, ValidationReport report) {
+        String path = "quests." + id;
+
+        QuestType type = QuestType.fromConfig(section.getString("type", "NORMAL"));
+        if (type == null) {
+            report.error(label, path + ".type",
+                    "알 수 없는 종류라 건너뜁니다: " + section.getString("type", null));
+            return null;
+        }
+
+        List<Objective> objectives = readObjectives(section.getList("objectives"),
+                label, path, report);
+        if (objectives == null) {
+            return null;
+        }
+        if (objectives.isEmpty()) {
+            report.error(label, path + ".objectives", "목표가 하나도 없어 건너뜁니다.");
+            return null;
+        }
+
+        String requireJob = section.getString("requireJob", null);
+        if (requireJob != null && !jobs.tree().hasBase(requireJob)) {
+            report.error(label, path + ".requireJob",
+                    "jobs.yml 에 없는 직업이라 조건을 지웁니다: " + requireJob);
+            requireJob = null;
+        }
+
+        Map<String, Long> currency = new LinkedHashMap<>();
+        ConfigurationSection currencySection =
+                section.getConfigurationSection("rewards.currency");
+        if (currencySection != null) {
+            for (String key : currencySection.getKeys(false)) {
+                currency.put(key, Math.max(0, (long) currencySection.getDouble(key, 0)));
+            }
+        }
+        QuestReward reward = new QuestReward(
+                Math.max(0, section.getDouble("rewards.combatExp", 0)),
+                Math.max(0, section.getInt("rewards.skillPoints", 0)),
+                Math.max(0, section.getInt("rewards.statPoints", 0)),
+                currency);
+
+        return new QuestDefinition(id,
+                section.getString("display", id),
+                type,
+                Math.max(1, section.getInt("requireLevel", 1)),
+                requireJob,
+                objectives,
+                reward,
+                section.getBoolean("repeatable", false));
+    }
+
+    /** 목표 목록을 읽는다. 해석할 수 없는 목표가 있으면 null. */
+    private List<Objective> readObjectives(List<?> raw, String label, String path,
+                                           ValidationReport report) {
+        List<Objective> objectives = new ArrayList<>();
+        if (raw == null) {
+            return objectives;
+        }
+        for (int i = 0; i < raw.size(); i++) {
+            String entryPath = path + ".objectives[" + i + "]";
+            if (!(raw.get(i) instanceof Map<?, ?> entry)) {
+                report.error(label, entryPath, "형식이 맞지 않습니다.");
+                return null;
+            }
+            Object typeValue = entry.get("type");
+            ObjectiveType type = ObjectiveType.fromConfig(
+                    typeValue == null ? null : String.valueOf(typeValue));
+            if (type == null) {
+                report.error(label, entryPath + ".type",
+                        "알 수 없는 목표 종류라 이 퀘스트를 끕니다: " + typeValue);
+                return null;
+            }
+            Object keyValue = entry.get(type.keyField());
+            if (keyValue == null) {
+                report.error(label, entryPath + "." + type.keyField(),
+                        "대상이 없어 이 퀘스트를 끕니다.");
+                return null;
+            }
+            int amount = 1;
+            if (entry.get("amount") instanceof Number number) {
+                amount = number.intValue();
+            }
+            objectives.add(new Objective(type, String.valueOf(keyValue), amount));
+        }
+        return objectives;
     }
 
     private void loadGui(ValidationReport report) {

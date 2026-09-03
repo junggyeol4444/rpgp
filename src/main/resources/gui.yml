@@ -60,7 +60,13 @@ screens:
       combo: { slot: 0,  material: ENDER_EYE }
       empty: { slot: 0,  material: GRAY_STAINED_GLASS_PANE }
 
+  # 첫 줄은 탭, 그 아래로 퀘스트가 순서대로 채워진다.
+  # entry 는 아이템 종류만 쓰이고 slot 값은 무시된다.
   quest:
     title: "퀘스트"
     rows: 6
-    icons: {}
+    icons:
+      available: { slot: 0, material: BOOK }
+      active:    { slot: 1, material: WRITABLE_BOOK }
+      completed: { slot: 2, material: ENCHANTED_BOOK }
+      entry:     { slot: 0, material: PAPER }

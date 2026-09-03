@@ -47,6 +47,9 @@ command:
   bind:
     desc: "스킬 등록"
     no-skills: "먼저 스킬을 해금해야 합니다."
+  quest:
+    desc: "퀘스트 목록"
+    no-quests: "등록된 퀘스트가 없습니다. 콘솔 로그를 확인하세요."
   admin:
     desc: "관리자 명령"
     reload:
@@ -79,6 +82,12 @@ command:
       desc: "스킬 강제 해금·삭제"
     bindreset:
       desc: "스킬 바인딩 초기화"
+    quest:
+      desc: "퀘스트 부여·완료·취소"
+    questreset:
+      desc: "퀘스트 진행 이력 초기화"
+    questcycle:
+      desc: "일일·주간 퀘스트 리셋"
 
 level:
   up: "레벨 업! {before} -> {after}"
@@ -131,6 +140,14 @@ admin:
     failed: "처리하지 못했습니다: {skill}"
   bindreset:
     done: "{player}의 스킬 바인딩을 초기화했습니다."
+  quest:
+    give: "{player}에게 퀘스트 {quest} 을(를) 주었습니다."
+    complete: "{player}의 퀘스트 {quest} 을(를) 완료 처리했습니다."
+    cancel: "{player}의 퀘스트 {quest} 을(를) 취소했습니다."
+  questreset:
+    done: "{player}의 퀘스트 이력을 초기화했습니다."
+  questcycle:
+    done: "{type} 퀘스트를 리셋했습니다. (대상 {players}명, {count}건)"
 
 # 키 이름에 on/off 를 쓰지 않는다. YAML 1.1 에서 on/off/yes/no 는
 # 문자열이 아니라 불리언으로 해석되어 경로가 state.true / state.false 가 된다.
@@ -257,6 +274,25 @@ gui:
       combo-taken: "이미 쓰이고 있는 조합입니다."
       trigger-unavailable: "지금은 쓸 수 없는 입력입니다."
 
+  # 5단계 추가 — 퀘스트 목록 창 (지시서 13장)
+  quest:
+    tab:
+      available: "수락 가능"
+      active: "진행 중"
+      completed: "완료"
+      selected: " 보고 있는 탭"
+      hint: " 눌러서 보기"
+    entry:
+      name: "{quest}"
+      type: " 종류: {type}"
+      level: " 필요 레벨: {level}"
+      objective: " {type} {key} {count}/{amount}"
+      reward: " 보상: 경험치 {exp} / 스킬 포인트 {points}"
+      hint:
+        available: " 좌클릭 수주"
+        active: " 좌클릭 완료 / 우클릭 포기"
+        completed: " 완료함"
+
 # 4단계 추가 — 유지 상태와 순간 입력 이름 (지시서 10장)
 hold:
   sneak: "웅크림"
@@ -294,3 +330,29 @@ skill:
     not-enough-mana: "마나가 모자랍니다."
     no-effect: "아무 대상도 없습니다."
     invalid-amount: "값이 올바르지 않습니다."
+
+# 5단계 추가 — 퀘스트
+quest:
+  accepted: "퀘스트를 받았습니다: {quest}"
+  completed: "퀘스트 완료: {quest}"
+  type:
+    normal: "일반"
+    main: "메인"
+    daily: "일일"
+    weekly: "주간"
+  result:
+    ok: ""
+    unknown-quest: "그런 퀘스트가 없습니다."
+    already-active: "이미 진행 중입니다."
+    already-completed: "이미 완료했고 다시 받을 수 없습니다."
+    level-too-low: "레벨이 모자랍니다."
+    wrong-job: "직업 조건이 맞지 않습니다."
+    not-active: "진행 중인 퀘스트가 아닙니다."
+    not-complete: "목표를 아직 다 채우지 못했습니다."
+
+# 5단계 추가 — 목표 종류 (지시서 8장)
+objective:
+  kill: "처치"
+  collect: "수집"
+  reach: "이동"
+  talk: "대화"
