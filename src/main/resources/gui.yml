@@ -1,24 +1,42 @@
 # 지시서 13장 [GUI 화면]
 # 화면 구성(제목, 크기, 아이콘 위치)은 전부 이 파일에서 읽는다.
 #
-# 실제 화면 정의는 해당 단계에서 채운다.
-#   stat   : 2단계
-#   job    : 3단계
-#   skill / bind : 4단계
-#   quest  : 5단계
+# icons 의 키는 화면이 정한 역할 이름이다.
+#   stat 화면 : 능력치 id (stats.yml 과 같은 이름) + info + reset
+#
+# material 은 마인크래프트 아이템 이름이다. 알 수 없는 이름이면
+# 그 자리만 STONE 으로 대체하고 콘솔에 남긴다.
+#
+# 나머지 화면은 해당 단계에서 채운다.
+#   job : 3단계 / skill · bind : 4단계 / quest : 5단계
 screens:
   stat:
     title: "스탯 분배"
     rows: 3
+    icons:
+      info:      { slot: 4,  material: PAPER }
+      strength:  { slot: 10, material: IRON_SWORD }
+      agility:   { slot: 11, material: FEATHER }
+      intellect: { slot: 12, material: BOOK }
+      vitality:  { slot: 13, material: GOLDEN_APPLE }
+      reset:     { slot: 16, material: BARRIER }
+
   job:
     title: "직업"
     rows: 3
+    icons: {}
+
   skill:
     title: "스킬트리"
     rows: 6
+    icons: {}
+
   bind:
     title: "스킬 등록"
     rows: 3
+    icons: {}
+
   quest:
     title: "퀘스트"
     rows: 6
+    icons: {}

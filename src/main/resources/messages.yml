@@ -31,6 +31,10 @@ command:
     level: " 전투 레벨: {level}"
     exp: " 경험치: {exp} / {required}"
     exp-max: " 경험치: {exp} (최대 레벨)"
+    stat-points: " 남은 스탯 포인트: {points}"
+  stat:
+    desc: "스탯 분배"
+    no-stats: "stats.yml 에 능력치 정의가 없습니다. 콘솔 로그를 확인하세요."
   admin:
     desc: "관리자 명령"
     reload:
@@ -49,6 +53,10 @@ command:
       desc: "플레이어 데이터 조회"
     datareset:
       desc: "플레이어 데이터 전체 초기화"
+    statpoint:
+      desc: "스탯 포인트 지급·회수"
+    statreset:
+      desc: "스탯 강제 초기화"
 
 level:
   up: "레벨 업! {before} -> {after}"
@@ -81,9 +89,60 @@ admin:
     line: " {path}: {value}"
   datareset:
     done: "{player}의 데이터를 초기화했습니다."
+  statpoint:
+    given: "{player}에게 스탯 포인트 {amount}를 지급했습니다."
+    taken: "{player}의 스탯 포인트 {amount}를 회수했습니다."
+  statreset:
+    done: "{player}의 스탯을 초기화했습니다. (비용 없음)"
 
 # 키 이름에 on/off 를 쓰지 않는다. YAML 1.1 에서 on/off/yes/no 는
 # 문자열이 아니라 불리언으로 해석되어 경로가 state.true / state.false 가 된다.
 state:
   enabled: "켜짐"
   disabled: "꺼짐"
+
+# 2단계 추가 — 파생 수치 이름 (지시서 4장)
+derived:
+  physicalDamage: "물리 공격력"
+  magicDamage: "마법 공격력"
+  defense: "방어력"
+  maxHealth: "최대 체력"
+  maxMana: "최대 마나"
+  critChance: "치명타 확률"
+  critDamage: "치명타 배수"
+  attackSpeed: "공격 속도"
+
+# 2단계 추가 — 상시 표시 (지시서 10장)
+hud:
+  actionbar: "HP {hp}/{maxHp}   MP {mana}/{maxMana}"
+  scoreboard:
+    title: "RpgCore"
+    level: "레벨 {level}"
+    exp: "경험치 {exp}/{required}"
+    exp-max: "경험치 {exp} (최대)"
+  tab:
+    header: "레벨 {level}"
+    footer: ""
+
+# 2단계 추가 — 스탯 분배 창 (지시서 13장)
+gui:
+  stat:
+    info:
+      name: "남은 스탯 포인트: {points}"
+    derived: " {name}: {value}"
+    entry:
+      name: "{stat}: {points}"
+      per-point: " 1포인트당 {name} +{value}"
+      hint: "좌클릭 +1 / 시프트 좌클릭 +{shift}"
+    reset:
+      name: "스탯 초기화"
+      cost: " 비용: {currency} {amount}"
+      owned: " 보유: {amount}"
+    result:
+      ok: "적용했습니다."
+      unknown-stat: "그런 능력치가 없습니다."
+      invalid-amount: "값이 올바르지 않습니다."
+      not-enough-points: "스탯 포인트가 모자랍니다."
+      reset-not-allowed: "스탯 초기화가 막혀 있습니다."
+      not-enough-currency: "초기화 비용이 모자랍니다."
+      nothing-to-reset: "되돌릴 분배 내역이 없습니다."

@@ -13,8 +13,8 @@ import org.bukkit.entity.Player;
 /**
  * 지시서 12장 — /rpg info, 현재 상태 요약.
  *
- * <p>1단계에서는 전투 레벨과 경험치만 보여준다. 스탯·직업·생활 트랙은
- * 해당 단계에서 줄을 추가한다. (지시서 14장 [병행 작업])
+ * <p>단계가 올라갈 때마다 줄을 추가한다. (지시서 14장 [병행 작업])
+ * 지금은 전투 레벨·경험치·남은 스탯 포인트까지다.
  */
 public final class InfoCommand implements SubCommand {
 
@@ -70,5 +70,7 @@ public final class InfoCommand implements SubCommand {
                     "exp", CombatLevelService.format(data.combat().exp()),
                     "required", CombatLevelService.format(levels.requiredExp(level)));
         }
+        messages.sendPlain(sender, "command.info.stat-points",
+                "points", data.combat().statPoints());
     }
 }

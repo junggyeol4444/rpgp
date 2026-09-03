@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
@@ -37,6 +38,10 @@ public final class PlayerManager implements Lifecycle, Listener {
     private final Logger logger;
 
     private final Map<UUID, RpgPlayer> online = new ConcurrentHashMap<>();
+
+    /** 데이터가 올라온 직후 / 내려가기 직전에 불릴 대상. */
+    private Consumer<RpgPlayer> onAttach = rpgPlayer -> { };
+    private Consumer<RpgPlayer> onDetach = rpgPlayer -> { };
 
     public PlayerManager(PlayerDataCache cache, SaveScheduler saves,
                          Messages messages, Logger logger) {
@@ -86,6 +91,24 @@ public final class PlayerManager implements Lifecycle, Listener {
         return online.size();
     }
 
+    /** 데이터가 캐시에 올라온 직후 불릴 대상을 더한다. 등록 순서대로 불린다. */
+    public void onAttach(Consumer<RpgPlayer> listener) {
+        Consumer<RpgPlayer> previous = this.onAttach;
+        this.onAttach = rpgPlayer -> {
+            previous.accept(rpgPlayer);
+            listener.accept(rpgPlayer);
+        };
+    }
+
+    /** 캐시에서 내려가기 직전에 불릴 대상을 더한다. */
+    public void onDetach(Consumer<RpgPlayer> listener) {
+        Consumer<RpgPlayer> previous = this.onDetach;
+        this.onDetach = rpgPlayer -> {
+            previous.accept(rpgPlayer);
+            listener.accept(rpgPlayer);
+        };
+    }
+
     /** 문구 출력용. */
     public Messages messages() {
         return messages;
@@ -103,9 +126,11 @@ public final class PlayerManager implements Lifecycle, Listener {
         fresh.name(player.getName());
         fresh.lastLogin(System.currentTimeMillis());
         cache.put(fresh);
-        online.put(uuid, new RpgPlayer(player, fresh));
+        RpgPlayer rpgPlayer = new RpgPlayer(player, fresh);
+        online.put(uuid, rpgPlayer);
         // 되돌릴 수 없는 조작이므로 즉시 저장한다.
         saves.markDirty(fresh, SavePriority.IMMEDIATE);
+        onAttach.accept(rpgPlayer);
     }
 
     // ------------------------------------------------------------
@@ -139,14 +164,18 @@ public final class PlayerManager implements Lifecycle, Listener {
         data.name(player.getName());
         data.lastLogin(System.currentTimeMillis());
         cache.put(data);
-        online.put(data.uuid(), new RpgPlayer(player, data));
-        // TODO 2단계: UI(액션바·스코어보드·탭) 초기화를 여기에 붙인다.
+        RpgPlayer rpgPlayer = new RpgPlayer(player, data);
+        online.put(data.uuid(), rpgPlayer);
+        onAttach.accept(rpgPlayer);
     }
 
     @EventHandler(priority = EventPriority.MONITOR)
     public void onQuit(PlayerQuitEvent event) {
         UUID uuid = event.getPlayer().getUniqueId();
-        online.remove(uuid);
+        RpgPlayer leaving = online.remove(uuid);
+        if (leaving != null) {
+            onDetach.accept(leaving);
+        }
         PlayerData data = cache.get(uuid);
         if (data == null) {
             // 아직 로드가 끝나지 않은 상태. 저장할 것이 없다.

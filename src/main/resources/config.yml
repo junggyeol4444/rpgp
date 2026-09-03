@@ -8,6 +8,27 @@ storage:
   # 저장/로드 비동기 처리에 사용할 스레드 수.
   ioThreads: 2
 
+# 2단계에서 추가. 상시 표시 (지시서 10장)
+ui:
+  # 갱신 주기 (틱). 20틱 = 1초
+  updateIntervalTicks: 20
+  # 확인되지 않은 표시 API를 쓰는 부분이라 채널별로 끌 수 있게 둔다.
+  # 서버에서 오류가 나는 채널만 false 로 바꾸면 나머지는 계속 돈다.
+  channels:
+    actionbar: true
+    scoreboard: true
+    tab: true
+    bossbar: true
+
+# 2단계에서 추가. 전투 계산 계수. (지시서 9장)
+combat:
+  # 방어력 감쇠 상수. 실제 피해 = 피해 x c / (c + 방어력)
+  defenseConstant: 100.0
+  # 방어력이 아무리 높아도 이만큼은 들어간다.
+  minimumDamage: 1.0
+  # 플레이어끼리의 피해를 계산할지. 끄면 서로 피해를 주지 않는다.
+  pvpEnabled: true
+
 debug:
   # /rpg admin debug <on|off> 로도 토글된다.
   # 켜면 데미지 계산 과정을 로그로 출력한다. (2단계에서 사용)

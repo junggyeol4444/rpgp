@@ -44,8 +44,12 @@ permissions:
     default: true
     children:
       rpgcore.command.info: true
+      rpgcore.command.stat: true
   rpgcore.command.info:
     description: /rpg info
+    default: true
+  rpgcore.command.stat:
+    description: /rpg stat
     default: true
 
   rpgcore.admin:
@@ -64,6 +68,8 @@ permissions:
       rpgcore.admin.exp: true
       rpgcore.admin.datadump: true
       rpgcore.admin.datareset: true
+      rpgcore.admin.statpoint: true
+      rpgcore.admin.statreset: true
   rpgcore.admin.reload:
     default: op
   rpgcore.admin.save:
@@ -79,4 +85,8 @@ permissions:
   rpgcore.admin.datadump:
     default: op
   rpgcore.admin.datareset:
+    default: op
+  rpgcore.admin.statpoint:
+    default: op
+  rpgcore.admin.statreset:
     default: op

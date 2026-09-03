@@ -18,4 +18,17 @@ public interface MainThreadExecutor {
 
     /** 현재 스레드가 메인 스레드인지. */
     boolean isMainThread();
+
+    /**
+     * 메인 스레드에서 주기적으로 실행한다.
+     *
+     * @param periodTicks 주기 (틱)
+     * @return 멈출 때 부를 핸들
+     */
+    Cancellable runTimer(Runnable task, long periodTicks);
+
+    /** 예약을 멈추는 핸들. */
+    interface Cancellable {
+        void cancel();
+    }
 }

@@ -1,17 +1,27 @@
 package com.example.rpgcore.config;
 
+import com.example.rpgcore.config.schema.CombatSettings;
 import com.example.rpgcore.config.schema.CurveSettings;
+import com.example.rpgcore.config.schema.GuiIcon;
+import com.example.rpgcore.config.schema.GuiScreen;
 import com.example.rpgcore.config.schema.GeneralSettings;
 import com.example.rpgcore.config.schema.LevelSettings;
+import com.example.rpgcore.config.schema.ResetSettings;
+import com.example.rpgcore.config.schema.StatSettings;
 import com.example.rpgcore.config.schema.StorageSettings;
+import com.example.rpgcore.config.schema.UiSettings;
 import com.example.rpgcore.config.validation.ValidationReport;
 import com.example.rpgcore.core.Reloadable;
 import com.example.rpgcore.level.ExpSource;
+import com.example.rpgcore.stat.DerivedStat;
+import com.example.rpgcore.stat.StatType;
 import com.example.rpgcore.util.Messages;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -60,6 +70,10 @@ public final class ConfigManager implements Reloadable {
 
     private volatile GeneralSettings general = GeneralSettings.defaults();
     private volatile LevelSettings levels = LevelSettings.defaults();
+    private volatile StatSettings stats = StatSettings.defaults();
+    private volatile CombatSettings combat = CombatSettings.defaults();
+    private volatile UiSettings ui = UiSettings.defaults();
+    private volatile Map<String, GuiScreen> guiScreens = new LinkedHashMap<>();
     private volatile boolean debug;
     private volatile int lastErrorCount;
 
@@ -79,6 +93,8 @@ public final class ConfigManager implements Reloadable {
         writeDefaults();
         loadGeneral(report);
         loadLevels(report);
+        loadStats(report);
+        loadGui(report);
         loadMessages(report);
         this.lastErrorCount = report.errorCount();
     }
@@ -94,6 +110,24 @@ public final class ConfigManager implements Reloadable {
 
     public LevelSettings levels() {
         return levels;
+    }
+
+    public StatSettings stats() {
+        return stats;
+    }
+
+    public CombatSettings combat() {
+        return combat;
+    }
+
+    public UiSettings ui() {
+        return ui;
+    }
+
+    /** gui.yml 의 화면. 없으면 기본 크기의 빈 화면을 준다. */
+    public GuiScreen guiScreen(String id) {
+        GuiScreen screen = guiScreens.get(id);
+        return screen == null ? GuiScreen.fallback(id) : screen;
     }
 
     public Messages messages() {
@@ -172,6 +206,45 @@ public final class ConfigManager implements Reloadable {
             threads = 2;
         }
 
+        CombatSettings combatDefaults = CombatSettings.defaults();
+        double defenseConstant =
+                config.getDouble("combat.defenseConstant", combatDefaults.defenseConstant());
+        if (defenseConstant < 1.0) {
+            report.error(file, "combat.defenseConstant",
+                    "1 이상이어야 해서 기본값으로 되돌립니다: " + defenseConstant);
+            defenseConstant = combatDefaults.defenseConstant();
+        }
+        double minimumDamage =
+                config.getDouble("combat.minimumDamage", combatDefaults.minimumDamage());
+        if (minimumDamage < 0.0) {
+            report.error(file, "combat.minimumDamage",
+                    "음수는 둘 수 없어 0으로 되돌립니다: " + minimumDamage);
+            minimumDamage = 0.0;
+        }
+        combat = new CombatSettings(defenseConstant, minimumDamage,
+                config.getBoolean("combat.pvpEnabled", combatDefaults.pvpEnabled()));
+
+        UiSettings uiDefaults = UiSettings.defaults();
+        long uiInterval = config.getInt("ui.updateIntervalTicks",
+                (int) uiDefaults.updateIntervalTicks());
+        if (uiInterval < 1) {
+            report.error(file, "ui.updateIntervalTicks",
+                    "1 이상이어야 해서 기본값으로 되돌립니다: " + uiInterval);
+            uiInterval = uiDefaults.updateIntervalTicks();
+        }
+        Set<String> channels = new LinkedHashSet<>();
+        ConfigurationSection channelSection = config.getConfigurationSection("ui.channels");
+        if (channelSection == null) {
+            channels.addAll(uiDefaults.channels());
+        } else {
+            for (String key : channelSection.getKeys(false)) {
+                if (channelSection.getBoolean(key, true)) {
+                    channels.add(key);
+                }
+            }
+        }
+        ui = new UiSettings(uiInterval, channels);
+
         boolean debugEnabled = config.getBoolean("debug.enabled", false);
         general = new GeneralSettings(new StorageSettings(type, interval, threads), debugEnabled);
         debug = debugEnabled;
@@ -240,6 +313,115 @@ public final class ConfigManager implements Reloadable {
                 section.getString("type", fallback.type()),
                 section.getDouble("base", fallback.base()),
                 section.getDouble("factor", fallback.factor()));
+    }
+
+    private void loadStats(ValidationReport report) {
+        String file = "stats.yml";
+        YamlConfiguration config = read(file, report);
+        if (config == null) {
+            stats = StatSettings.defaults();
+            return;
+        }
+
+        Map<String, StatType> parsed = new LinkedHashMap<>();
+        ConfigurationSection statsSection = config.getConfigurationSection("stats");
+        if (statsSection == null) {
+            report.error(file, "stats", "능력치 정의가 없습니다. 스탯 분배를 쓸 수 없습니다.");
+        } else {
+            int order = 0;
+            for (String id : statsSection.getKeys(false)) {
+                ConfigurationSection statSection = statsSection.getConfigurationSection(id);
+                if (statSection == null) {
+                    report.error(file, "stats." + id, "형식이 맞지 않아 건너뜁니다.");
+                    continue;
+                }
+                Map<DerivedStat, Double> perPoint =
+                        readDerived(statSection.getConfigurationSection("derived"),
+                                file, "stats." + id + ".derived", report);
+                parsed.put(id, new StatType(id,
+                        statSection.getString("display", id), perPoint, order++));
+            }
+        }
+
+        Map<DerivedStat, Double> base = readDerived(config.getConfigurationSection("base"),
+                file, "base", report);
+
+        ResetSettings defaults = ResetSettings.defaults();
+        ResetSettings reset = new ResetSettings(
+                config.getBoolean("reset.allowed", defaults.allowed()),
+                config.getString("reset.cost.currency", defaults.currencyId()),
+                Math.max(0, (long) config.getDouble("reset.cost.amount", defaults.amount())),
+                Math.max(1.0, config.getDouble("reset.scaling", defaults.scaling())));
+
+        stats = new StatSettings(parsed, base, reset);
+    }
+
+    /** derived 블록을 읽는다. 모르는 키는 그 항목만 건너뛴다. */
+    private Map<DerivedStat, Double> readDerived(ConfigurationSection section, String file,
+                                                 String path, ValidationReport report) {
+        Map<DerivedStat, Double> result = new EnumMap<>(DerivedStat.class);
+        if (section == null) {
+            return result;
+        }
+        for (String key : section.getKeys(false)) {
+            DerivedStat derived = DerivedStat.fromConfigKey(key);
+            if (derived == null) {
+                report.error(file, path + "." + key, "알 수 없는 파생 수치라 건너뜁니다.");
+                continue;
+            }
+            result.put(derived, section.getDouble(key, 0.0));
+        }
+        return result;
+    }
+
+    private void loadGui(ValidationReport report) {
+        String file = "gui.yml";
+        YamlConfiguration config = read(file, report);
+        Map<String, GuiScreen> screens = new LinkedHashMap<>();
+        if (config == null) {
+            guiScreens = screens;
+            return;
+        }
+        ConfigurationSection root = config.getConfigurationSection("screens");
+        if (root == null) {
+            report.error(file, "screens", "화면 정의가 없습니다.");
+            guiScreens = screens;
+            return;
+        }
+        for (String id : root.getKeys(false)) {
+            ConfigurationSection section = root.getConfigurationSection(id);
+            if (section == null) {
+                report.error(file, "screens." + id, "형식이 맞지 않아 건너뜁니다.");
+                continue;
+            }
+            int rows = section.getInt("rows", 3);
+            if (rows < 1 || rows > 6) {
+                report.error(file, "screens." + id + ".rows",
+                        "1 이상 6 이하여야 해서 3으로 되돌립니다: " + rows);
+                rows = 3;
+            }
+            Map<String, GuiIcon> icons = new LinkedHashMap<>();
+            ConfigurationSection iconSection = section.getConfigurationSection("icons");
+            if (iconSection != null) {
+                for (String role : iconSection.getKeys(false)) {
+                    ConfigurationSection one = iconSection.getConfigurationSection(role);
+                    if (one == null) {
+                        report.error(file, "screens." + id + ".icons." + role,
+                                "형식이 맞지 않아 건너뜁니다.");
+                        continue;
+                    }
+                    int slot = one.getInt("slot", -1);
+                    if (slot < 0 || slot >= rows * 9) {
+                        report.error(file, "screens." + id + ".icons." + role + ".slot",
+                                "화면 크기를 벗어나 건너뜁니다: " + slot);
+                        continue;
+                    }
+                    icons.put(role, new GuiIcon(slot, one.getString("material", null)));
+                }
+            }
+            screens.put(id, new GuiScreen(id, section.getString("title", id), rows, icons));
+        }
+        guiScreens = screens;
     }
 
     private void loadMessages(ValidationReport report) {

@@ -1,5 +1,8 @@
 package com.example.rpgcore;
 
+import com.example.rpgcore.combat.DamagePipeline;
+import com.example.rpgcore.combat.HealthService;
+import com.example.rpgcore.combat.listener.CombatListener;
 import com.example.rpgcore.command.RpgCommand;
 import com.example.rpgcore.command.admin.AdminCommand;
 import com.example.rpgcore.command.admin.DataDumpCommand;
@@ -9,8 +12,11 @@ import com.example.rpgcore.command.admin.ExpCommand;
 import com.example.rpgcore.command.admin.ReloadCommand;
 import com.example.rpgcore.command.admin.SaveCommand;
 import com.example.rpgcore.command.admin.SetLevelCommand;
+import com.example.rpgcore.command.admin.StatPointCommand;
+import com.example.rpgcore.command.admin.StatResetCommand;
 import com.example.rpgcore.command.admin.StatusCommand;
 import com.example.rpgcore.command.sub.InfoCommand;
+import com.example.rpgcore.command.sub.StatCommand;
 import com.example.rpgcore.config.ConfigManager;
 import com.example.rpgcore.config.validation.ValidationReport;
 import com.example.rpgcore.core.BukkitMainThreadExecutor;
@@ -18,11 +24,18 @@ import com.example.rpgcore.core.MainThreadExecutor;
 import com.example.rpgcore.core.ServiceRegistry;
 import com.example.rpgcore.level.CombatLevelService;
 import com.example.rpgcore.player.PlayerManager;
+import com.example.rpgcore.stat.StatService;
 import com.example.rpgcore.storage.PlayerDataRepository;
 import com.example.rpgcore.storage.cache.PlayerDataCache;
 import com.example.rpgcore.storage.dirty.DirtyTracker;
 import com.example.rpgcore.storage.dirty.SaveScheduler;
 import com.example.rpgcore.storage.yaml.YamlRepository;
+import com.example.rpgcore.ui.HudService;
+import com.example.rpgcore.ui.actionbar.ActionBarChannel;
+import com.example.rpgcore.ui.bossbar.BossBarChannel;
+import com.example.rpgcore.ui.gui.GuiManager;
+import com.example.rpgcore.ui.scoreboard.ScoreboardChannel;
+import com.example.rpgcore.ui.tab.TabChannel;
 import com.example.rpgcore.util.Messages;
 import com.example.rpgcore.util.PluginIds;
 import java.io.IOException;
@@ -38,11 +51,11 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * 지시서 3장 — 진입점. 부트스트랩만 담당한다.
  *
- * <p>여기서는 서비스를 만들어 {@link ServiceRegistry} 에 등록하고
- * 순서대로 켜는 일만 한다. 게임 로직은 각 서비스에 둔다.
+ * <p>서비스를 만들어 {@link ServiceRegistry} 에 등록하고 순서대로 켠다.
+ * 게임 로직은 각 서비스에 둔다.
  *
- * <p>이번 단계는 1단계(골격과 전투 레벨)다. 지시서 14장에 따라
- * 스탯·직업·스킬·퀘스트는 아직 붙이지 않는다.
+ * <p>현재 범위는 지시서 14장의 1단계(골격과 전투 레벨)와
+ * 2단계(스탯과 전투)다. 직업·스킬·퀘스트는 아직 없다.
  */
 public final class RpgCorePlugin extends JavaPlugin {
 
@@ -77,18 +90,49 @@ public final class RpgCorePlugin extends JavaPlugin {
                 new CombatLevelService(config, saves, messages));
         PlayerManager players = registry.register(PlayerManager.class,
                 new PlayerManager(cache, saves, messages, getLogger()));
+        StatService stats = registry.register(StatService.class,
+                new StatService(config, saves, players));
+        HealthService health = registry.register(HealthService.class, new HealthService());
+        DamagePipeline pipeline = registry.register(DamagePipeline.class,
+                new DamagePipeline(config, getLogger()));
+        GuiManager guis = registry.register(GuiManager.class, new GuiManager(players));
+        HudService hud = registry.register(HudService.class,
+                new HudService(players, mainThread, getLogger(),
+                        config.ui().updateIntervalTicks(), config.ui().channels()));
+
+        hud.register(new ActionBarChannel(messages, health))
+                .register(new ScoreboardChannel(messages, levels))
+                .register(new TabChannel(messages))
+                .register(new BossBarChannel());
+
+        // 파생 수치가 바뀌면 내부 HP 상한도 따라 움직여야 한다. (지시서 9장)
+        stats.onRecalculated(health::onStatsChanged);
+
+        players.onAttach(rpgPlayer -> {
+            stats.refresh(rpgPlayer);
+            health.initialize(rpgPlayer);
+            hud.attach(rpgPlayer);
+        });
+        players.onDetach(rpgPlayer -> {
+            hud.detach(rpgPlayer);
+            guis.forget(rpgPlayer);
+        });
 
         registry.enableAll();
 
         getServer().getPluginManager().registerEvents(players, this);
-        if (!registerCommands(config, repository, saves, levels, players, messages)) {
+        getServer().getPluginManager().registerEvents(guis, this);
+        getServer().getPluginManager().registerEvents(
+                new CombatListener(config, players, pipeline, health), this);
+
+        if (!registerCommands(config, repository, saves, levels, players, stats, guis, messages)) {
             getLogger().severe("명령어를 등록하지 못했습니다. plugin.yml 의 commands 항목을 확인하세요.");
         }
 
         // 서버가 돌아가는 중에 켜졌다면 이미 접속해 있는 플레이어가 있다.
         players.loadOnlinePlayers();
 
-        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1단계: 골격과 전투 레벨)");
+        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~2단계)");
     }
 
     @Override
@@ -108,6 +152,8 @@ public final class RpgCorePlugin extends JavaPlugin {
                                      SaveScheduler saves,
                                      CombatLevelService levels,
                                      PlayerManager players,
+                                     StatService stats,
+                                     GuiManager guis,
                                      Messages messages) {
         AdminCommand admin = new AdminCommand(messages);
         admin.register(new ReloadCommand(registry, config, saves, messages))
@@ -116,11 +162,14 @@ public final class RpgCorePlugin extends JavaPlugin {
                 .register(new DebugCommand(config, messages))
                 .register(new SetLevelCommand(players, levels, messages))
                 .register(new ExpCommand(players, levels, messages))
+                .register(new StatPointCommand(players, stats, messages))
+                .register(new StatResetCommand(players, stats, messages))
                 .register(new DataDumpCommand(players, messages))
                 .register(new DataResetCommand(players, messages));
 
         RpgCommand root = new RpgCommand(messages);
         root.register(new InfoCommand(players, levels, messages));
+        root.register(new StatCommand(config, players, stats, guis, messages));
         root.register(admin);
 
         PluginCommand command = getCommand(PluginIds.ROOT_COMMAND);

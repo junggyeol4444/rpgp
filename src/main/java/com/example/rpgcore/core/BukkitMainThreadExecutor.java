@@ -2,6 +2,7 @@ package com.example.rpgcore.core;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitTask;
 
 /**
  * {@link MainThreadExecutor} 의 Bukkit 스케줄러 구현.
@@ -35,5 +36,15 @@ public final class BukkitMainThreadExecutor implements MainThreadExecutor {
     @Override
     public boolean isMainThread() {
         return Bukkit.isPrimaryThread();
+    }
+
+    @Override
+    public Cancellable runTimer(Runnable task, long periodTicks) {
+        if (!plugin.isEnabled()) {
+            return () -> { };
+        }
+        BukkitTask scheduled =
+                Bukkit.getScheduler().runTaskTimer(plugin, task, periodTicks, periodTicks);
+        return scheduled::cancel;
     }
 }

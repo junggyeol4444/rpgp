@@ -1,4 +1,12 @@
 # 지시서 8장 [stats.yml]
+#
+# stats 아래 항목은 자유롭게 늘리거나 줄일 수 있다.
+# derived 의 키는 플러그인이 아는 이름만 쓸 수 있고, 모르는 키가 오면
+# 그 항목만 건너뛰고 콘솔에 남긴다. (지시서 6장)
+#
+# 쓸 수 있는 derived 키:
+#   physicalDamage  magicDamage  defense  maxHealth
+#   maxMana  critChance  critDamage  attackSpeed
 stats:
   strength:
     display: "힘"
@@ -19,6 +27,19 @@ stats:
     derived:
       maxHealth: 10.0
       defense: 1.0
+
+# 2단계에서 추가. 능력치가 전부 0일 때의 기본 수치.
+# 지시서 8장 예시에는 없지만, 이 값이 없으면 최대 체력이 0이 되어
+# 전투 계산이 성립하지 않는다. 수치는 코드가 아니라 여기서만 바꾼다.
+base:
+  maxHealth: 100.0
+  maxMana: 50.0
+  physicalDamage: 1.0
+  magicDamage: 0.0
+  defense: 0.0
+  critChance: 0.05         # 5%
+  critDamage: 1.5          # 치명타 시 1.5배
+  attackSpeed: 1.0
 
 reset:
   allowed: true
