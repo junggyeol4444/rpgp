@@ -1,0 +1,8 @@
+# 지시서 8장 [economy.yml]
+vault:
+  enabled: true
+  preferUnlocked: true     # VaultUnlocked 우선, 없으면 원본 Vault
+currencies:
+  dungeon_coin:
+    display: "던전 코인"
+    max: -1

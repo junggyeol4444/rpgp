@@ -1,0 +1,65 @@
+plugins {
+    id 'java'
+}
+
+group = 'com.example'
+version = '0.1.0-SNAPSHOT'
+
+// 지시서 1장 / 2장: Java toolchain 25 고정
+// Paper 26.1.2 README 도 같은 값을 쓴다.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+repositories {
+    mavenCentral()
+    // 지시서 16장 1번 확인 결과.
+    // 출처: PaperMC/Paper 저장소 ver/26.1.2 브랜치의 README.md
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+
+    // VaultUnlockedAPI 배포처.
+    // 출처: TheNewEconomy/VaultUnlockedAPI 의 pom.xml distributionManagement
+    maven { url = 'https://repo.codemc.io/repository/maven-public/' }
+}
+
+dependencies {
+    // 지시서 16장 1번 확인 결과.
+    // 출처: PaperMC/Paper ver/26.1.2 의 README.md 에 실린 그대로다.
+    // 26.1.2 는 26.x 의 첫 릴리스이며(저장소 태그 기준 26.x 태그는 이것뿐),
+    // 여기에 맞춰 두면 26.x 전 구간을 대상으로 삼게 된다.
+    // ".build.+" 는 같은 26.1.2 안에서 최신 빌드를 쓴다는 뜻이다.
+    compileOnly 'io.papermc.paper:paper-api:26.1.2.build.+'
+
+    // 지시서 16장 7번 확인 결과.
+    // VaultUnlockedAPI 하나로 원본 Vault 와 VaultUnlocked 를 모두 덮는다.
+    // 이 API 가 레거시 net.milkbowl.vault.economy.Economy 를 그대로 담고
+    // 있고, 원본 VaultAPI 의 같은 인터페이스와 메서드 목록이 완전히
+    // 일치하는 것을 확인했다. 새 net.milkbowl.vault2.economy.Economy 도
+    // 함께 들어 있다.
+    //
+    // 좌표와 버전은 VaultUnlockedAPI 의 pom.xml 에서 가져왔다.
+    // (그 저장소는 태그가 오래돼 pom 의 버전이 기준이다)
+    compileOnly 'net.milkbowl.vault:VaultUnlockedAPI:2.19'
+}
+
+// 지시서 2장: 인코딩 UTF-8 고정
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.withType(Javadoc).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+tasks.named('processResources') {
+    filteringCharset = 'UTF-8'
+    // 버전 문자열이 build.gradle과 plugin.yml 두 곳에 흩어지지 않도록 주입한다.
+    filesMatching('plugin.yml') {
+        expand(pluginVersion: project.version)
+    }
+}
+
+// 지시서 2장: shadow 사용 여부는 외부 라이브러리 도입 시 결정한다.
+//             현재 런타임 라이브러리 의존이 없으므로 도입하지 않는다.

@@ -1,0 +1,453 @@
+# 지시서 6장: 모든 출력 문구는 이 파일에 둔다. 코드에 문구를 박지 않는다.
+#
+# 치환자는 {이름} 형식이다.
+#
+# [확인 필요 - 지시서 16장] 색 코드('&' 변환 또는 Adventure 컴포넌트)
+# 처리 방식은 26.x에서 어떤 API가 유효한지 확인한 뒤 붙인다.
+# 확인 전까지 문구에 색 코드를 쓰지 않는다. (지시서 0장 5번)
+#
+# 지금 들어 있는 문구는 1단계에서 실제로 쓰이는 것뿐이다.
+# 스탯·직업·스킬·퀘스트 문구는 해당 단계에서 추가한다.
+
+prefix: "[RpgCore] "
+
+common:
+  player-only: "이 명령은 플레이어만 사용할 수 있습니다."
+  no-permission: "권한이 없습니다."
+  unknown-subcommand: "알 수 없는 하위 명령입니다: {input}"
+  unknown-player: "접속 중인 플레이어를 찾을 수 없습니다: {name}"
+  data-not-loaded: "데이터를 아직 불러오지 못했습니다. 잠시 후 다시 시도하세요."
+  invalid-number: "숫자가 아닙니다: {input}"
+  usage: "사용법: {usage}"
+
+help:
+  header: "=== RpgCore 명령어 ==="
+  line: " {usage} - {desc}"
+
+command:
+  info:
+    desc: "현재 상태 요약"
+    header: "=== {player} ==="
+    level: " 전투 레벨: {level}"
+    exp: " 경험치: {exp} / {required}"
+    exp-max: " 경험치: {exp} (최대 레벨)"
+    stat-points: " 남은 스탯 포인트: {points}"
+    job: " 직업: {job}"
+    job-none: " 직업: 미선택 ({level}레벨에 선택 가능)"
+  stat:
+    desc: "스탯 분배"
+    no-stats: "stats.yml 에 능력치 정의가 없습니다. 콘솔 로그를 확인하세요."
+  job:
+    desc: "직업 선택·전직"
+    no-jobs: "jobs.yml 에 직업 정의가 없습니다. 콘솔 로그를 확인하세요."
+  skill:
+    desc: "스킬트리"
+    no-job: "먼저 직업을 골라야 합니다."
+    no-skills: "이 직업에 등록된 스킬이 없습니다. 콘솔 로그를 확인하세요."
+  bind:
+    desc: "스킬 등록"
+    no-skills: "먼저 스킬을 해금해야 합니다."
+  quest:
+    desc: "퀘스트 목록"
+    no-quests: "등록된 퀘스트가 없습니다. 콘솔 로그를 확인하세요."
+  life:
+    desc: "생활 트랙 현황"
+    header: "=== 생활 트랙 ==="
+    track: " {track}: Lv.{level}  ({exp}/{required})"
+    efficiency: "   {name} +{value}"
+    unlocked: " 해금: {count}건"
+  admin:
+    desc: "관리자 명령"
+    reload:
+      desc: "설정 리로드"
+    save:
+      desc: "저장 강제 실행"
+    status:
+      desc: "플러그인 상태·버전 확인"
+    debug:
+      desc: "디버그 모드 토글"
+    setlevel:
+      desc: "전투 레벨 설정"
+    exp:
+      desc: "경험치 지급·차감"
+    datadump:
+      desc: "플레이어 데이터 조회"
+    datareset:
+      desc: "플레이어 데이터 전체 초기화"
+    statpoint:
+      desc: "스탯 포인트 지급·회수"
+    statreset:
+      desc: "스탯 강제 초기화"
+    setjob:
+      desc: "직업 강제 지정"
+    jobreset:
+      desc: "전직 상태 초기화"
+    skillpoint:
+      desc: "스킬 포인트 지급·회수"
+    skill:
+      desc: "스킬 강제 해금·삭제"
+    bindreset:
+      desc: "스킬 바인딩 초기화"
+    quest:
+      desc: "퀘스트 부여·완료·취소"
+    questreset:
+      desc: "퀘스트 진행 이력 초기화"
+    questcycle:
+      desc: "일일·주간 퀘스트 리셋"
+    questedit:
+      desc: "퀘스트 GUI 에디터 열기"
+    currency:
+      desc: "특수 재화 지급·차감"
+    life:
+      desc: "생활 트랙 레벨·경험치 조정"
+
+level:
+  up: "레벨 업! {before} -> {after}"
+  exp-gain: "경험치 +{amount}"
+  max-reached: "최대 레벨에 도달했습니다."
+
+admin:
+  reload:
+    done: "설정을 다시 불러왔습니다. (파일 {count}개, {ms}ms)"
+    has-errors: "설정 오류 {count}건을 건너뛰었습니다. 콘솔 로그를 확인하세요."
+  save:
+    done: "저장을 요청했습니다. (대상 {count}명)"
+  status:
+    header: "=== RpgCore 상태 ==="
+    version: " 버전: {version}"
+    storage: " 저장소: {type}"
+    online: " 캐시된 플레이어: {cached}명"
+    autosave: " 자동 저장 간격: {seconds}초"
+    debug: " 디버그: {state}"
+    economy: " 경제 연동: {name}"
+    config-errors: " 마지막 설정 오류: {count}건"
+  debug:
+    toggled: "디버그 모드: {state}"
+  setlevel:
+    done: "{player}의 전투 레벨을 {level}로 설정했습니다."
+  exp:
+    given: "{player}에게 경험치 {amount}를 지급했습니다."
+    taken: "{player}의 경험치 {amount}를 차감했습니다."
+  datadump:
+    header: "=== {player} 데이터 ==="
+    line: " {path}: {value}"
+  datareset:
+    done: "{player}의 데이터를 초기화했습니다."
+  statpoint:
+    given: "{player}에게 스탯 포인트 {amount}를 지급했습니다."
+    taken: "{player}의 스탯 포인트 {amount}를 회수했습니다."
+  statreset:
+    done: "{player}의 스탯을 초기화했습니다. (비용 없음)"
+  setjob:
+    done: "{player}의 직업을 {job}(으)로 지정했습니다."
+    failed: "지정하지 못했습니다: {id} ({reason})"
+    tier-not-supported: "지금은 base 만 지정할 수 있습니다. 1차·2차 전직은 8·9단계입니다: {tier}"
+  jobreset:
+    done: "{player}의 전직 상태를 초기화했습니다."
+  skillpoint:
+    given: "{player}에게 스킬 포인트 {amount}를 지급했습니다."
+    taken: "{player}의 스킬 포인트 {amount}를 회수했습니다."
+  skill:
+    unlock: "{player}에게 스킬 {skill} 을(를) 해금했습니다."
+    remove: "{player}의 스킬 {skill} 을(를) 지웠습니다."
+    failed: "처리하지 못했습니다: {skill}"
+  bindreset:
+    done: "{player}의 스킬 바인딩을 초기화했습니다."
+  quest:
+    give: "{player}에게 퀘스트 {quest} 을(를) 주었습니다."
+    complete: "{player}의 퀘스트 {quest} 을(를) 완료 처리했습니다."
+    cancel: "{player}의 퀘스트 {quest} 을(를) 취소했습니다."
+  questreset:
+    done: "{player}의 퀘스트 이력을 초기화했습니다."
+  questcycle:
+    done: "{type} 퀘스트를 리셋했습니다. (대상 {players}명, {count}건)"
+  life:
+    done: "{player}의 {track} {field}을(를) {value}로 설정했습니다."
+    unknown-track: "알 수 없는 트랙입니다: {track} (living, mining, crafting, alchemy)"
+  currency:
+    give: "{player}에게 {currency} {amount}를 지급했습니다. (보유 {owned})"
+    take: "{player}의 {currency} {amount}를 차감했습니다. (보유 {owned})"
+    unknown: "economy.yml 에 없는 재화입니다: {currency}"
+
+# 키 이름에 on/off 를 쓰지 않는다. YAML 1.1 에서 on/off/yes/no 는
+# 문자열이 아니라 불리언으로 해석되어 경로가 state.true / state.false 가 된다.
+state:
+  enabled: "켜짐"
+  disabled: "꺼짐"
+
+# 2단계 추가 — 파생 수치 이름 (지시서 4장)
+derived:
+  physicalDamage: "물리 공격력"
+  magicDamage: "마법 공격력"
+  defense: "방어력"
+  maxHealth: "최대 체력"
+  maxMana: "최대 마나"
+  critChance: "치명타 확률"
+  critDamage: "치명타 배수"
+  attackSpeed: "공격 속도"
+
+# 2단계 추가 — 상시 표시 (지시서 10장)
+hud:
+  actionbar: "HP {hp}/{maxHp}   MP {mana}/{maxMana}"
+  scoreboard:
+    title: "RpgCore"
+    level: "레벨 {level}"
+    exp: "경험치 {exp}/{required}"
+    exp-max: "경험치 {exp} (최대)"
+  tab:
+    header: "레벨 {level}"
+    footer: ""
+
+# 2단계 추가 — 스탯 분배 창 (지시서 13장)
+gui:
+  stat:
+    info:
+      name: "남은 스탯 포인트: {points}"
+    derived: " {name}: {value}"
+    entry:
+      name: "{stat}: {points}"
+      per-point: " 1포인트당 {name} +{value}"
+      hint: "좌클릭 +1 / 시프트 좌클릭 +{shift}"
+    reset:
+      name: "스탯 초기화"
+      cost: " 비용: {currency} {amount}"
+      owned: " 보유: {amount}"
+    result:
+      ok: "적용했습니다."
+      unknown-stat: "그런 능력치가 없습니다."
+      invalid-amount: "값이 올바르지 않습니다."
+      not-enough-points: "스탯 포인트가 모자랍니다."
+      reset-not-allowed: "스탯 초기화가 막혀 있습니다."
+      not-enough-currency: "초기화 비용이 모자랍니다."
+      nothing-to-reset: "되돌릴 분배 내역이 없습니다."
+
+# 3단계 추가 — 직업 선택 창 (지시서 13장)
+  job:
+    info:
+      name: "직업"
+      none: " 아직 고르지 않았습니다. ({level}레벨부터)"
+      tier-level: " {tier}차 전직: {level}레벨 + 퀘스트 {quest}"
+      current: " 현재: {job}"
+    entry:
+      name: "{job}"
+      current: "{job} (선택함)"
+      role: " 역할: {role}"
+      bonus: " 레벨당 {stat} +{value}"
+      selected: " 지금 이 직업입니다."
+      confirm: " 한 번 더 눌러야 확정됩니다."
+      click: " 눌러서 고르기 (되돌릴 수 없음)"
+    selected: "직업을 {job}(으)로 정했습니다."
+    advanced: "전직했습니다: {job}"
+    confirm-advance: "전직은 되돌릴 수 없습니다. 한 번 더 누르세요."
+    state:
+      ok: " 고를 수 있습니다."
+      no-jobs: "jobs.yml 에 직업 정의가 없습니다."
+      unknown-job: "그런 직업이 없습니다."
+      level-too-low: " 레벨이 모자랍니다."
+      already-selected: " 이미 골랐고 되돌릴 수 없습니다."
+      no-base-job: " 먼저 기본 직업을 골라야 합니다."
+      quest-not-done: " 전직 퀘스트를 먼저 깨야 합니다."
+      unknown-branch: "그런 분기가 없습니다."
+      no-tier1: " 먼저 1차 전직을 해야 합니다."
+
+  # 4단계 추가 — 스킬트리 창 / 스킬 등록 창 (지시서 13장)
+  skill:
+    info:
+      name: "남은 스킬 포인트: {points}"
+      hint: "좌클릭 해금·레벨 +1 / 시프트 좌클릭 +{shift}"
+      branch: "분기 선택은 되돌릴 수 없습니다."
+    entry:
+      name: "{skill} (Lv.{level}/{max})"
+      power: " 위력 {value}"
+      mana: " 마나 {value}"
+      cooldown: " 쿨타임 {value}초"
+      branch: " 분기 그룹: {group}"
+      confirm: " 한 번 더 눌러야 확정됩니다."
+    confirm-branch: "{skill} 을(를) 고르면 같은 분기의 다른 스킬은 영구 잠금됩니다. 한 번 더 누르세요."
+    state:
+      ok: " 해금할 수 있습니다."
+      unknown-skill: "그런 스킬이 없습니다."
+      wrong-job: " 다른 직업의 스킬입니다."
+      stage-locked: " 전직 단계가 모자랍니다."
+      wrong-branch: " 다른 전직 분기의 스킬입니다."
+      parent-locked: " 선행 스킬이 필요합니다."
+      branch-locked: " 같은 분기에서 다른 쪽을 골랐습니다."
+      already-unlocked: " 해금함"
+      not-unlocked: "해금하지 않은 스킬입니다."
+      not-enough-points: " 스킬 포인트가 모자랍니다."
+      max-level: " 레벨 상한입니다."
+      on-cooldown: "아직 쿨타임입니다."
+      not-enough-mana: "마나가 모자랍니다."
+      no-effect: "효과가 없습니다."
+      invalid-amount: "값이 올바르지 않습니다."
+  bind:
+    empty: "비어 있음"
+    no-skills: "해금한 스킬이 없습니다."
+    info:
+      name: "스킬 등록"
+      slots: " 아이템 슬롯: {count}칸"
+      combos: " 키 조합: {used} / {max}"
+      hint: " 좌클릭 바꾸기 / 우클릭 비우기"
+    slot:
+      name: "{index}번 슬롯: {skill}"
+      hint: " 좌클릭 바꾸기 / 우클릭 비우기"
+    combo:
+      name: "{hold} + {trigger}"
+      skill: " 스킬: {skill}"
+      hint: " 좌클릭 바꾸기 / 우클릭 비우기"
+    result:
+      ok: ""
+      unknown-skill: "그런 스킬이 없습니다."
+      not-unlocked: "해금하지 않은 스킬입니다."
+      slot-out-of-range: "열려 있지 않은 슬롯입니다."
+      combo-taken: "이미 쓰이고 있는 조합입니다."
+      trigger-unavailable: "지금은 쓸 수 없는 입력입니다."
+
+  # 5단계 추가 — 퀘스트 목록 창 (지시서 13장)
+  quest:
+    tab:
+      available: "수락 가능"
+      active: "진행 중"
+      completed: "완료"
+      selected: " 보고 있는 탭"
+      hint: " 눌러서 보기"
+    entry:
+      name: "{quest}"
+      type: " 종류: {type}"
+      level: " 필요 레벨: {level}"
+      objective: " {type} {key} {count}/{amount}"
+      reward: " 보상: 경험치 {exp} / 스킬 포인트 {points}"
+      hint:
+        available: " 좌클릭 수주"
+        active: " 좌클릭 완료 / 우클릭 포기"
+        completed: " 완료함"
+
+  # 10단계 추가 — 퀘스트 GUI 에디터 (지시서 14장)
+  editor:
+    none: "없음"
+    value: " 지금 값: {value}"
+    new:
+      name: "새 퀘스트 만들기"
+      hint: " 눌러서 채팅으로 id 입력"
+    entry:
+      name: "{quest}"
+      id: " id: {id}"
+      type: " 종류: {type}"
+      objectives: " 목표: {count}개"
+      hint: " 좌클릭 편집 / 우클릭 삭제 (quests/editor.yml 에서만 지웁니다)"
+      hint-edit-only: " 좌클릭 편집"
+      copied: " quests.yml 에 손으로 적은 퀘스트입니다."
+      copied2: " 저장하면 quests/editor.yml 에 복사본이 생기고 그쪽이 우선합니다."
+    field:
+      display: "표시 이름 ({id})"
+      type: "퀘스트 종류"
+      level: "필요 레벨"
+      job: "필요 직업"
+      repeat: "반복 가능"
+      exp: "보상 경험치"
+      skillpoint: "보상 스킬 포인트"
+      statpoint: "보상 스탯 포인트"
+      add: "목표 추가"
+      save: "저장"
+    hint:
+      chat: " 눌러서 채팅으로 입력"
+      cycle: " 눌러서 다음 값"
+      toggle: " 눌러서 켜고 끄기"
+      number: " 좌클릭 +1 / 우클릭 -1 / 시프트 {shift}배"
+      add: " 눌러서 목표 한 줄 추가"
+      save: " 눌러서 파일에 저장"
+      no-objective: " 목표가 하나도 없어 저장할 수 없습니다."
+    objective:
+      name: "{index}. {type}"
+      target: " 대상 {key} x{amount}"
+      hint: " 좌클릭 종류 / 시프트 좌클릭 대상 / 우클릭 삭제"
+
+# 4단계 추가 — 유지 상태와 순간 입력 이름 (지시서 10장)
+hold:
+  sneak: "웅크림"
+  sprint: "달리기"
+
+trigger:
+  left_click: "좌클릭"
+  right_click: "우클릭"
+  swap_hand: "손 바꾸기(F)"
+  drop_item: "버리기(Q)"
+  open_inventory: "인벤토리(E)"
+  jump: "점프"
+  slot_change: "핫바 변경"
+
+# 4단계 추가 — 스킬
+skill:
+  item:
+    name: "{skill} (Lv.{level})"
+    mana: " 마나 {amount}"
+    cooldown: " 쿨타임 {seconds}초"
+    hint: " 들고 우클릭"
+    locked: "스킬 아이템은 버릴 수 없습니다."
+  cast:
+    ok: ""
+    unknown-skill: "그런 스킬이 없습니다."
+    wrong-job: "다른 직업의 스킬입니다."
+    stage-locked: "전직 단계가 모자랍니다."
+    wrong-branch: "다른 전직 분기의 스킬입니다."
+    parent-locked: "선행 스킬을 먼저 해금하세요."
+    branch-locked: "같은 분기에서 다른 쪽을 이미 골랐습니다."
+    already-unlocked: "이미 해금했습니다."
+    not-unlocked: "해금하지 않은 스킬입니다."
+    not-enough-points: "스킬 포인트가 모자랍니다."
+    max-level: "스킬 레벨이 상한입니다."
+    on-cooldown: "아직 쿨타임입니다."
+    not-enough-mana: "마나가 모자랍니다."
+    no-effect: "아무 대상도 없습니다."
+    invalid-amount: "값이 올바르지 않습니다."
+
+# 5단계 추가 — 퀘스트
+quest:
+  accepted: "퀘스트를 받았습니다: {quest}"
+  completed: "퀘스트 완료: {quest}"
+  type:
+    normal: "일반"
+    main: "메인"
+    daily: "일일"
+    weekly: "주간"
+  result:
+    ok: ""
+    unknown-quest: "그런 퀘스트가 없습니다."
+    already-active: "이미 진행 중입니다."
+    already-completed: "이미 완료했고 다시 받을 수 없습니다."
+    level-too-low: "레벨이 모자랍니다."
+    wrong-job: "직업 조건이 맞지 않습니다."
+    not-active: "진행 중인 퀘스트가 아닙니다."
+    not-complete: "목표를 아직 다 채우지 못했습니다."
+
+# 5단계 추가 — 목표 종류 (지시서 8장)
+objective:
+  kill: "처치"
+  collect: "수집"
+  reach: "이동"
+  talk: "대화"
+
+# 7단계 추가 — 생활 트랙 (기획서 3장)
+life:
+  level-up: "{track} 레벨 업! {before} -> {after}"
+  unlocked: "해금: {id}"
+
+# 10단계 추가 — 퀘스트 GUI 에디터 (지시서 14장)
+editor:
+  prompt:
+    id: "새 퀘스트 id 를 채팅으로 입력하세요. (소문자·숫자·밑줄, 40자 이내)"
+    display: "표시 이름을 채팅으로 입력하세요."
+    job: "필요 직업 id 를 채팅으로 입력하세요. 없애려면 none 이라고 치세요."
+    objective: "목표 대상과 개수를 채팅으로 입력하세요. 예: ZOMBIE 10"
+    cancel: "물리려면 {word} 라고 치세요."
+    cancelled: "입력을 물렸습니다."
+    bad-id: "id 로 쓸 수 없습니다: {input}"
+    duplicate-id: "이미 있는 퀘스트 id 입니다: {id}"
+  save:
+    done: "저장하고 다시 읽었습니다: {quest} ({id})"
+    failed: "저장하지 못했습니다. 콘솔 로그를 확인하세요."
+    warned: "저장은 했지만 다시 읽는 중 문제가 {count}건 있습니다. 콘솔 로그를 확인하세요."
+    no-objective: "목표가 하나도 없어 저장할 수 없습니다."
+  delete:
+    done: "지우고 다시 읽었습니다: {quest}"
+    failed: "지우지 못했습니다. 콘솔 로그를 확인하세요."

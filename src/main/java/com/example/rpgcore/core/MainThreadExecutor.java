@@ -1,0 +1,34 @@
+package com.example.rpgcore.core;
+
+/**
+ * 메인 스레드로 되돌아오기 위한 진입점.
+ *
+ * <p>지시서 0장 4번에 따라 파일 입출력은 전부 비동기로 처리한다.
+ * 비동기 작업이 끝난 뒤 서버 상태를 건드리려면 반드시 메인 스레드로
+ * 돌아와야 하는데, 그 경로를 이 인터페이스 하나로 모아둔다.
+ *
+ * <p>지시서 0장 5번(확인되지 않은 API를 추측해서 쓰지 않는다)에 따라,
+ * 실제 스케줄러 호출은 구현체 한 곳에만 둔다. 26.x 에서 스케줄러 API가
+ * 다르다면 구현체 파일 하나만 고치면 된다.
+ */
+public interface MainThreadExecutor {
+
+    /** 메인 스레드에서 실행한다. 이미 메인 스레드면 즉시 실행해도 된다. */
+    void run(Runnable task);
+
+    /** 현재 스레드가 메인 스레드인지. */
+    boolean isMainThread();
+
+    /**
+     * 메인 스레드에서 주기적으로 실행한다.
+     *
+     * @param periodTicks 주기 (틱)
+     * @return 멈출 때 부를 핸들
+     */
+    Cancellable runTimer(Runnable task, long periodTicks);
+
+    /** 예약을 멈추는 핸들. */
+    interface Cancellable {
+        void cancel();
+    }
+}

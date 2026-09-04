@@ -1,0 +1,148 @@
+# 지시서 8장 [quests.yml] / 기획서 7장
+#
+# 지시서 6장: 이 파일 외에 quests/ 디렉터리의 .yml 도 함께 읽힌다.
+# 파일이 갈려도 퀘스트 id 는 서버 전체에서 하나뿐이어야 한다.
+#
+# 목표 종류와 대상 키
+#   KILL    target : 개체 종류 이름 (ZOMBIE 등)
+#   COLLECT item   : 아이템 종류 이름 (ROTTEN_FLESH 등)
+#   REACH   region : regions.yml 의 지역 id
+#   TALK    npc    : NPC id
+#
+# ================================================================
+# [밸런스 미확정] 보상과 필요 개수는 맞춰 본 값이 아니다.
+#
+# [TALK 은 아직 진행되지 않는다]
+# 지시서 16장 6번(Citizens 의 26.x 구동)이 확인되지 않아 NPC 연동
+# 구현이 없다. TALK 목표가 든 퀘스트는 지금 상태로는 끝낼 수 없다.
+# ================================================================
+quests:
+
+  # 지시서 8장에 실린 예시 그대로. TALK 이 들어 있어 NPC 연동 전에는
+  # 완료할 수 없다. 형식 참고용으로 남겨 둔다.
+  example_quest:
+    display: "예시 퀘스트"
+    type: NORMAL
+    requireLevel: 5
+    requireJob: null
+    objectives:
+      - type: KILL
+        target: "ZOMBIE"
+        amount: 10
+      - type: COLLECT
+        item: "ROTTEN_FLESH"
+        amount: 5
+      - type: REACH
+        region: "start_field"
+      - type: TALK
+        npc: "village_elder"
+    rewards:
+      combatExp: 200
+      skillPoints: 1
+      currency:
+        dungeon_coin: 10
+    repeatable: false
+
+  # 아래 넷은 NPC 없이도 수주부터 보상까지 돌아간다.
+  intro_hunt:
+    display: "첫 사냥"
+    type: NORMAL
+    requireLevel: 1
+    objectives:
+      - type: KILL
+        target: "ZOMBIE"
+        amount: 5
+    rewards:
+      combatExp: 150
+      statPoints: 1
+    repeatable: false
+
+  intro_gather:
+    display: "쓸 만한 것 모으기"
+    type: NORMAL
+    requireLevel: 1
+    objectives:
+      - type: COLLECT
+        item: "ROTTEN_FLESH"
+        amount: 5
+    rewards:
+      combatExp: 100
+      currency:
+        dungeon_coin: 5
+    repeatable: false
+
+  intro_travel:
+    display: "시작 평원 둘러보기"
+    type: NORMAL
+    requireLevel: 1
+    objectives:
+      - type: REACH
+        region: "start_field"
+    rewards:
+      combatExp: 80
+    repeatable: false
+
+  daily_hunt:
+    display: "일일 토벌"
+    type: DAILY
+    requireLevel: 3
+    objectives:
+      - type: KILL
+        target: "ZOMBIE"
+        amount: 20
+    rewards:
+      combatExp: 400
+      skillPoints: 1
+      currency:
+        dungeon_coin: 20
+    repeatable: false
+
+  # 1차 전직 퀘스트. jobs.yml 의 tier1Quest 가 이 id 를 가리킨다.
+  # 이 퀘스트를 깨야 20레벨에서 1차 전직을 할 수 있다.
+  job_advance_1:
+    display: "1차 전직 시험"
+    type: MAIN
+    requireLevel: 20
+    objectives:
+      - type: KILL
+        target: "ZOMBIE"
+        amount: 30
+      - type: REACH
+        region: "start_field"
+    rewards:
+      combatExp: 1000
+      skillPoints: 2
+    repeatable: false
+
+  # 2차 전직 퀘스트. jobs.yml 의 tier2Quest 가 이 id 를 가리킨다.
+  job_advance_2:
+    display: "2차 전직 시험"
+    type: MAIN
+    requireLevel: 50
+    objectives:
+      - type: KILL
+        target: "ZOMBIE"
+        amount: 100
+      - type: COLLECT
+        item: "ROTTEN_FLESH"
+        amount: 50
+    rewards:
+      combatExp: 5000
+      skillPoints: 3
+      statPoints: 2
+    repeatable: false
+
+  # 직업 조건이 붙은 예시. jobs.yml 의 id 와 같아야 한다.
+  swordsman_trial:
+    display: "검술 시험"
+    type: NORMAL
+    requireLevel: 5
+    requireJob: swordsman
+    objectives:
+      - type: KILL
+        target: "ZOMBIE"
+        amount: 10
+    rewards:
+      combatExp: 300
+      skillPoints: 1
+    repeatable: false

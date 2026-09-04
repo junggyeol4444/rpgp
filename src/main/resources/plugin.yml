@@ -1,0 +1,148 @@
+# ================================================================
+# RpgCore plugin.yml
+# ----------------------------------------------------------------
+# [검증 2 - 지시서 16장] 확인 완료
+#   26.1.2 API 에 plugin.yml(PluginDescriptionFile)과
+#   paper-plugin.yml(PluginMeta) 두 방식이 모두 있다.
+#   PluginDescriptionFile 은 사용 중단이 아니고 PluginMeta 를 구현한다.
+#   이 플러그인은 부트스트랩·라이브러리 로더 기능을 쓰지 않으므로
+#   더 단순한 plugin.yml 을 쓴다.
+#
+# [검증 3 - 지시서 16장] 확인 완료
+#   api-version 은 패치 단위까지 올라간다.
+#   Paper 저장소 ver/26.1.2 의 gradle.properties 에
+#   "apiVersion=26.1.2  # This is the current API version for use in
+#   (paper-)plugin.yml files" 라고 적혀 있다.
+#   26.x 태그는 26.1.2 하나뿐이라 이 값이 26.x 의 시작점이다.
+# ================================================================
+name: RpgCore
+version: '${pluginVersion}'
+main: com.example.rpgcore.RpgCorePlugin
+description: RPG core systems for Paper
+author: junggyeol4444
+
+api-version: '26.1.2'
+
+# 지시서 0장 6번 / 15장: 외부 플러그인은 전부 soft-depend.
+# 해당 플러그인이 없어도 서버가 뜨고 그 기능만 비활성화된다.
+softdepend:
+  - Vault
+  - VaultUnlocked
+  - Citizens
+  - PlaceholderAPI
+
+# 지시서 2장 / 12장: 명령어는 /rpg 하나만 등록하고 하위 명령은 코드에서 분기
+commands:
+  rpg:
+    description: RpgCore root command
+    usage: /rpg
+
+permissions:
+  # 지시서 12장 [권한 노드]
+  # 1단계에서 실제로 존재하는 명령만 선언한다.
+  # 명령이 늘어나면 해당 단계에서 노드를 함께 추가한다.
+  rpgcore.command.*:
+    description: 플레이어 명령 전체
+    default: true
+    children:
+      rpgcore.command.info: true
+      rpgcore.command.stat: true
+      rpgcore.command.job: true
+      rpgcore.command.skill: true
+      rpgcore.command.bind: true
+      rpgcore.command.quest: true
+      rpgcore.command.life: true
+  rpgcore.command.info:
+    description: /rpg info
+    default: true
+  rpgcore.command.stat:
+    description: /rpg stat
+    default: true
+  rpgcore.command.job:
+    description: /rpg job
+    default: true
+  rpgcore.command.skill:
+    description: /rpg skill
+    default: true
+  rpgcore.command.bind:
+    description: /rpg bind
+    default: true
+  rpgcore.command.quest:
+    description: /rpg quest
+    default: true
+  rpgcore.command.life:
+    description: /rpg life
+    default: true
+
+  rpgcore.admin:
+    description: /rpg admin 진입
+    default: op
+  rpgcore.admin.*:
+    description: 관리자 명령 전체
+    default: op
+    children:
+      rpgcore.admin: true
+      rpgcore.admin.reload: true
+      rpgcore.admin.save: true
+      rpgcore.admin.status: true
+      rpgcore.admin.debug: true
+      rpgcore.admin.setlevel: true
+      rpgcore.admin.exp: true
+      rpgcore.admin.datadump: true
+      rpgcore.admin.datareset: true
+      rpgcore.admin.statpoint: true
+      rpgcore.admin.statreset: true
+      rpgcore.admin.setjob: true
+      rpgcore.admin.jobreset: true
+      rpgcore.admin.skillpoint: true
+      rpgcore.admin.skill: true
+      rpgcore.admin.bindreset: true
+      rpgcore.admin.quest: true
+      rpgcore.admin.questreset: true
+      rpgcore.admin.questcycle: true
+      rpgcore.admin.questedit: true
+      rpgcore.admin.currency: true
+      rpgcore.admin.life: true
+  rpgcore.admin.reload:
+    default: op
+  rpgcore.admin.save:
+    default: op
+  rpgcore.admin.status:
+    default: op
+  rpgcore.admin.debug:
+    default: op
+  rpgcore.admin.setlevel:
+    default: op
+  rpgcore.admin.exp:
+    default: op
+  rpgcore.admin.datadump:
+    default: op
+  rpgcore.admin.datareset:
+    default: op
+  rpgcore.admin.statpoint:
+    default: op
+  rpgcore.admin.statreset:
+    default: op
+  rpgcore.admin.setjob:
+    default: op
+  rpgcore.admin.jobreset:
+    default: op
+  rpgcore.admin.skillpoint:
+    default: op
+  rpgcore.admin.skill:
+    default: op
+  rpgcore.admin.bindreset:
+    default: op
+  rpgcore.admin.quest:
+    default: op
+  rpgcore.admin.questreset:
+    default: op
+  rpgcore.admin.questcycle:
+    default: op
+  rpgcore.admin.questedit:
+    default: op
+    description: "퀘스트 GUI 에디터를 연다. quests/editor.yml 을 고친다"
+  rpgcore.admin.currency:
+    default: op
+  rpgcore.admin.life:
+    default: op

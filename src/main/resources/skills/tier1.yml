@@ -1,0 +1,2263 @@
+# 1차 전직 스킬 (8단계)
+#
+# 지시서 6장의 디렉터리 스캔으로 skills.yml 과 함께 읽힌다.
+# 스킬 id 는 서버 전체에서 하나뿐이어야 하므로 직업_분기_이름 으로 짓는다.
+# (tamer 와 trapper 의 1차 분기에 support 가 둘 다 있어서 필요하다)
+#
+# requireBranch 가 붙은 스킬은 그 1차 분기를 고른 사람만 해금할 수 있다.
+# stage: TIER1 이므로 1차 전직 전에는 아예 잠겨 있다.
+#
+# ================================================================
+# [밸런스 미확정] 수치는 기본 직업 스킬과 같은 골격을 쓴다.
+# 맞춰 본 값이 아니다.
+#
+# [효과 타입 부족] 펫(tamer)과 설치물(trapper)은 해당 효과 타입이 아직
+# 없어서 위력이 나가는 자리만 잡아 둔 상태다.
+# ================================================================
+skills:
+
+  # ---- swordsman / guardian (방어형) ----
+  swordsman_guardian_brace:
+    display: "받아넘기기 자세"
+    job: swordsman
+    stage: TIER1
+    requireBranch: guardian
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 0.8
+  swordsman_guardian_riposte:
+    display: "반격"
+    job: swordsman
+    stage: TIER1
+    requireBranch: guardian
+    tree:
+      parent: swordsman_guardian_brace
+      branch: swordsman_guardian_stance
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 4.0
+        angle: 80
+  swordsman_guardian_bulwark:
+    display: "방벽"
+    job: swordsman
+    stage: TIER1
+    requireBranch: guardian
+    tree:
+      parent: swordsman_guardian_brace
+      branch: swordsman_guardian_stance
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.2
+  swordsman_guardian_taunt:
+    display: "도발"
+    job: swordsman
+    stage: TIER1
+    requireBranch: guardian
+    tree:
+      parent: swordsman_guardian_brace
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 6.0
+  swordsman_guardian_punish:
+    display: "응징"
+    job: swordsman
+    stage: TIER1
+    requireBranch: guardian
+    tree:
+      parent: swordsman_guardian_taunt
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 4.0
+        angle: 25
+  swordsman_guardian_endure:
+    display: "버티기"
+    job: swordsman
+    stage: TIER1
+    requireBranch: guardian
+    tree:
+      parent: swordsman_guardian_taunt
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.4
+
+  # ---- swordsman / swift (속공형) ----
+  swordsman_swift_step:
+    display: "발놀림"
+    job: swordsman
+    stage: TIER1
+    requireBranch: swift
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 4.0
+        angle: 60
+  swordsman_swift_flurry:
+    display: "연타"
+    job: swordsman
+    stage: TIER1
+    requireBranch: swift
+    tree:
+      parent: swordsman_swift_step
+      branch: swordsman_swift_tempo
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 4.0
+        angle: 100
+  swordsman_swift_pierce:
+    display: "급소 찌르기"
+    job: swordsman
+    stage: TIER1
+    requireBranch: swift
+    tree:
+      parent: swordsman_swift_step
+      branch: swordsman_swift_tempo
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 5.0
+        angle: 15
+  swordsman_swift_dash:
+    display: "돌진"
+    job: swordsman
+    stage: TIER1
+    requireBranch: swift
+    tree:
+      parent: swordsman_swift_step
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 6.0
+        angle: 45
+  swordsman_swift_chain:
+    display: "연격"
+    job: swordsman
+    stage: TIER1
+    requireBranch: swift
+    tree:
+      parent: swordsman_swift_dash
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 5.0
+        angle: 120
+  swordsman_swift_execute:
+    display: "마무리"
+    job: swordsman
+    stage: TIER1
+    requireBranch: swift
+    tree:
+      parent: swordsman_swift_dash
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 4.0
+        angle: 20
+
+  # ---- archer / precision (정밀형) ----
+  archer_precision_aimshot:
+    display: "조준 사격"
+    job: archer
+    stage: TIER1
+    requireBranch: precision
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 18.0
+        angle: 12
+  archer_precision_longshot:
+    display: "장거리 저격"
+    job: archer
+    stage: TIER1
+    requireBranch: precision
+    tree:
+      parent: archer_precision_aimshot
+      branch: archer_precision_aim
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 30.0
+        angle: 6
+  archer_precision_pierceshot:
+    display: "관통 사격"
+    job: archer
+    stage: TIER1
+    requireBranch: precision
+    tree:
+      parent: archer_precision_aimshot
+      branch: archer_precision_aim
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 20.0
+        angle: 10
+  archer_precision_mark:
+    display: "표식"
+    job: archer
+    stage: TIER1
+    requireBranch: precision
+    tree:
+      parent: archer_precision_aimshot
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 16.0
+        angle: 20
+  archer_precision_headshot:
+    display: "머리 노리기"
+    job: archer
+    stage: TIER1
+    requireBranch: precision
+    tree:
+      parent: archer_precision_mark
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 24.0
+        angle: 8
+  archer_precision_focusfire:
+    display: "집중 사격"
+    job: archer
+    stage: TIER1
+    requireBranch: precision
+    tree:
+      parent: archer_precision_mark
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 20.0
+        angle: 10
+
+  # ---- archer / rapid (연사형) ----
+  archer_rapid_quickdraw:
+    display: "속사"
+    job: archer
+    stage: TIER1
+    requireBranch: rapid
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 12.0
+        angle: 25
+  archer_rapid_multishot:
+    display: "다중 사격"
+    job: archer
+    stage: TIER1
+    requireBranch: rapid
+    tree:
+      parent: archer_rapid_quickdraw
+      branch: archer_rapid_volley
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 12.0
+        angle: 60
+  archer_rapid_mobileshot:
+    display: "이동 사격"
+    job: archer
+    stage: TIER1
+    requireBranch: rapid
+    tree:
+      parent: archer_rapid_quickdraw
+      branch: archer_rapid_volley
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 14.0
+        angle: 35
+  archer_rapid_suppress:
+    display: "제압 사격"
+    job: archer
+    stage: TIER1
+    requireBranch: rapid
+    tree:
+      parent: archer_rapid_quickdraw
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 10.0
+        angle: 80
+  archer_rapid_barrage:
+    display: "탄막"
+    job: archer
+    stage: TIER1
+    requireBranch: rapid
+    tree:
+      parent: archer_rapid_suppress
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 8.0
+  archer_rapid_retreat:
+    display: "후퇴 사격"
+    job: archer
+    stage: TIER1
+    requireBranch: rapid
+    tree:
+      parent: archer_rapid_suppress
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 10.0
+        angle: 40
+
+  # ---- alchemist / throw (투척형) ----
+  alchemist_throw_lob:
+    display: "약병 던지기"
+    job: alchemist
+    stage: TIER1
+    requireBranch: throw
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 5.0
+  alchemist_throw_corrosive:
+    display: "부식 약병"
+    job: alchemist
+    stage: TIER1
+    requireBranch: throw
+    tree:
+      parent: alchemist_throw_lob
+      branch: alchemist_throw_flask
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 6.0
+  alchemist_throw_blast:
+    display: "폭발 약병"
+    job: alchemist
+    stage: TIER1
+    requireBranch: throw
+    tree:
+      parent: alchemist_throw_lob
+      branch: alchemist_throw_flask
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 7.0
+  alchemist_throw_cloud:
+    display: "약운"
+    job: alchemist
+    stage: TIER1
+    requireBranch: throw
+    tree:
+      parent: alchemist_throw_lob
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 6.0
+  alchemist_throw_acidrain:
+    display: "산성비"
+    job: alchemist
+    stage: TIER1
+    requireBranch: throw
+    tree:
+      parent: alchemist_throw_cloud
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 8.0
+  alchemist_throw_shatter:
+    display: "파열"
+    job: alchemist
+    stage: TIER1
+    requireBranch: throw
+    tree:
+      parent: alchemist_throw_cloud
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 5.0
+
+  # ---- alchemist / brew (조제형) ----
+  alchemist_brew_mixture:
+    display: "조제"
+    job: alchemist
+    stage: TIER1
+    requireBranch: brew
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.0
+  alchemist_brew_selfbuff:
+    display: "자기 강화"
+    job: alchemist
+    stage: TIER1
+    requireBranch: brew
+    tree:
+      parent: alchemist_brew_mixture
+      branch: alchemist_brew_recipe
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.3
+  alchemist_brew_regen:
+    display: "지속 회복"
+    job: alchemist
+    stage: TIER1
+    requireBranch: brew
+    tree:
+      parent: alchemist_brew_mixture
+      branch: alchemist_brew_recipe
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.6
+  alchemist_brew_distill:
+    display: "증류"
+    job: alchemist
+    stage: TIER1
+    requireBranch: brew
+    tree:
+      parent: alchemist_brew_mixture
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.1
+  alchemist_brew_panacea:
+    display: "만병통치"
+    job: alchemist
+    stage: TIER1
+    requireBranch: brew
+    tree:
+      parent: alchemist_brew_distill
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 2.0
+  alchemist_brew_catalyst:
+    display: "촉매"
+    job: alchemist
+    stage: TIER1
+    requireBranch: brew
+    tree:
+      parent: alchemist_brew_distill
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 5.0
+
+  # ---- enchanter / weapon (무기 부여) ----
+  enchanter_weapon_infuse:
+    display: "주입"
+    job: enchanter
+    stage: TIER1
+    requireBranch: weapon
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 7.0
+        angle: 25
+  enchanter_weapon_element:
+    display: "원소 부여"
+    job: enchanter
+    stage: TIER1
+    requireBranch: weapon
+    tree:
+      parent: enchanter_weapon_infuse
+      branch: enchanter_weapon_rune
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 6.0
+        angle: 90
+  enchanter_weapon_overcharge:
+    display: "일시 초강화"
+    job: enchanter
+    stage: TIER1
+    requireBranch: weapon
+    tree:
+      parent: enchanter_weapon_infuse
+      branch: enchanter_weapon_rune
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 6.0
+        angle: 20
+  enchanter_weapon_sigil:
+    display: "각인 확장"
+    job: enchanter
+    stage: TIER1
+    requireBranch: weapon
+    tree:
+      parent: enchanter_weapon_infuse
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 5.0
+  enchanter_weapon_burst:
+    display: "마력 폭발"
+    job: enchanter
+    stage: TIER1
+    requireBranch: weapon
+    tree:
+      parent: enchanter_weapon_sigil
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 7.0
+  enchanter_weapon_brand:
+    display: "낙인"
+    job: enchanter
+    stage: TIER1
+    requireBranch: weapon
+    tree:
+      parent: enchanter_weapon_sigil
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 8.0
+        angle: 20
+
+  # ---- enchanter / armor (방어 부여) ----
+  enchanter_armor_shield:
+    display: "보호막"
+    job: enchanter
+    stage: TIER1
+    requireBranch: armor
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.0
+  enchanter_armor_resist:
+    display: "저항·내구"
+    job: enchanter
+    stage: TIER1
+    requireBranch: armor
+    tree:
+      parent: enchanter_armor_shield
+      branch: enchanter_armor_ward
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.4
+  enchanter_armor_reflect:
+    display: "반사"
+    job: enchanter
+    stage: TIER1
+    requireBranch: armor
+    tree:
+      parent: enchanter_armor_shield
+      branch: enchanter_armor_ward
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 4.0
+  enchanter_armor_aegis:
+    display: "성역"
+    job: enchanter
+    stage: TIER1
+    requireBranch: armor
+    tree:
+      parent: enchanter_armor_shield
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.2
+  enchanter_armor_bastion:
+    display: "요새"
+    job: enchanter
+    stage: TIER1
+    requireBranch: armor
+    tree:
+      parent: enchanter_armor_aegis
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.8
+  enchanter_armor_retort:
+    display: "되돌리기"
+    job: enchanter
+    stage: TIER1
+    requireBranch: armor
+    tree:
+      parent: enchanter_armor_aegis
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 5.0
+        angle: 110
+
+  # ---- berserker / rage (분노형) ----
+  berserker_rage_wrath:
+    display: "격노"
+    job: berserker
+    stage: TIER1
+    requireBranch: rage
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 5.0
+  berserker_rage_frenzy:
+    display: "폭주"
+    job: berserker
+    stage: TIER1
+    requireBranch: rage
+    tree:
+      parent: berserker_rage_wrath
+      branch: berserker_rage_fury
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 6.0
+        angle: 130
+  berserker_rage_lifesteal:
+    display: "흡혈"
+    job: berserker
+    stage: TIER1
+    requireBranch: rage
+    tree:
+      parent: berserker_rage_wrath
+      branch: berserker_rage_fury
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.1
+  berserker_rage_bloodlust:
+    display: "혈기"
+    job: berserker
+    stage: TIER1
+    requireBranch: rage
+    tree:
+      parent: berserker_rage_wrath
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 0.9
+  berserker_rage_rampage:
+    display: "광란"
+    job: berserker
+    stage: TIER1
+    requireBranch: rage
+    tree:
+      parent: berserker_rage_bloodlust
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 7.0
+  berserker_rage_berserk:
+    display: "광전사"
+    job: berserker
+    stage: TIER1
+    requireBranch: rage
+    tree:
+      parent: berserker_rage_bloodlust
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 6.0
+        angle: 150
+
+  # ---- berserker / sweep (광역형) ----
+  berserker_sweep_cleave:
+    display: "가르기"
+    job: berserker
+    stage: TIER1
+    requireBranch: sweep
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 5.0
+        angle: 120
+  berserker_sweep_spin:
+    display: "회전 광역"
+    job: berserker
+    stage: TIER1
+    requireBranch: sweep
+    tree:
+      parent: berserker_sweep_cleave
+      branch: berserker_sweep_impact
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 6.0
+  berserker_sweep_shockwave:
+    display: "충격파·넉백"
+    job: berserker
+    stage: TIER1
+    requireBranch: sweep
+    tree:
+      parent: berserker_sweep_cleave
+      branch: berserker_sweep_impact
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 8.0
+  berserker_sweep_slam:
+    display: "내리치기"
+    job: berserker
+    stage: TIER1
+    requireBranch: sweep
+    tree:
+      parent: berserker_sweep_cleave
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 5.0
+  berserker_sweep_tremor:
+    display: "진동"
+    job: berserker
+    stage: TIER1
+    requireBranch: sweep
+    tree:
+      parent: berserker_sweep_slam
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 9.0
+  berserker_sweep_uproot:
+    display: "뒤엎기"
+    job: berserker
+    stage: TIER1
+    requireBranch: sweep
+    tree:
+      parent: berserker_sweep_slam
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        strength: 1.6
+    effects:
+      - type: DAMAGE_CONE
+        range: 7.0
+        angle: 140
+
+  # ---- tamer / battle (전투 펫) ----
+  tamer_battle_sic:
+    display: "공격 명령"
+    job: tamer
+    stage: TIER1
+    requireBranch: battle
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 12.0
+        angle: 25
+  tamer_battle_single:
+    display: "단일 강화 펫"
+    job: tamer
+    stage: TIER1
+    requireBranch: battle
+    tree:
+      parent: tamer_battle_sic
+      branch: tamer_battle_kennel
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 14.0
+        angle: 18
+  tamer_battle_multi:
+    display: "다수 소환"
+    job: tamer
+    stage: TIER1
+    requireBranch: battle
+    tree:
+      parent: tamer_battle_sic
+      branch: tamer_battle_kennel
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 7.0
+  tamer_battle_hunt:
+    display: "사냥 지시"
+    job: tamer
+    stage: TIER1
+    requireBranch: battle
+    tree:
+      parent: tamer_battle_sic
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 12.0
+        angle: 30
+  tamer_battle_maul:
+    display: "물어뜯기"
+    job: tamer
+    stage: TIER1
+    requireBranch: battle
+    tree:
+      parent: tamer_battle_hunt
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 10.0
+        angle: 20
+  tamer_battle_pack:
+    display: "무리 돌격"
+    job: tamer
+    stage: TIER1
+    requireBranch: battle
+    tree:
+      parent: tamer_battle_hunt
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 8.0
+
+  # ---- tamer / support (보조 펫) ----
+  tamer_support_tend:
+    display: "돌보기"
+    job: tamer
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.1
+  tamer_support_buffpet:
+    display: "버프 펫"
+    job: tamer
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: tamer_support_tend
+      branch: tamer_support_bond
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.4
+  tamer_support_scout:
+    display: "정찰·유틸 펫"
+    job: tamer
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: tamer_support_tend
+      branch: tamer_support_bond
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 9.0
+  tamer_support_call:
+    display: "부르기"
+    job: tamer
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: tamer_support_tend
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.0
+  tamer_support_guardpet:
+    display: "호위 펫"
+    job: tamer
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: tamer_support_call
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.5
+  tamer_support_track:
+    display: "추적"
+    job: tamer
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: tamer_support_call
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        intellect: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 16.0
+        angle: 30
+
+  # ---- trapper / offense (공격 설치) ----
+  trapper_offense_deploy:
+    display: "전개"
+    job: trapper
+    stage: TIER1
+    requireBranch: offense
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 5.0
+  trapper_offense_turret:
+    display: "포탑"
+    job: trapper
+    stage: TIER1
+    requireBranch: offense
+    tree:
+      parent: trapper_offense_deploy
+      branch: trapper_offense_device
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_TARGET
+        range: 15.0
+        angle: 25
+  trapper_offense_mine:
+    display: "지뢰·함정"
+    job: trapper
+    stage: TIER1
+    requireBranch: offense
+    tree:
+      parent: trapper_offense_deploy
+      branch: trapper_offense_device
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 6.0
+  trapper_offense_spike:
+    display: "말뚝"
+    job: trapper
+    stage: TIER1
+    requireBranch: offense
+    tree:
+      parent: trapper_offense_deploy
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 4.0
+  trapper_offense_cluster:
+    display: "연쇄 설치"
+    job: trapper
+    stage: TIER1
+    requireBranch: offense
+    tree:
+      parent: trapper_offense_spike
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 8.0
+  trapper_offense_detonate:
+    display: "기폭"
+    job: trapper
+    stage: TIER1
+    requireBranch: offense
+    tree:
+      parent: trapper_offense_spike
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 9.0
+
+  # ---- trapper / support (지원 설치) ----
+  trapper_support_anchor:
+    display: "고정"
+    job: trapper
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: null
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.0
+  trapper_support_barrier:
+    display: "결계·영역"
+    job: trapper
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: trapper_support_anchor
+      branch: trapper_support_field
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.4
+  trapper_support_utility:
+    display: "이동·설치 유틸"
+    job: trapper
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: trapper_support_anchor
+      branch: trapper_support_field
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 6.0
+  trapper_support_beacon:
+    display: "표지"
+    job: trapper
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: trapper_support_anchor
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.1
+  trapper_support_sanctuary:
+    display: "성역"
+    job: trapper
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: trapper_support_beacon
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: HEAL_SELF
+        ratio: 1.7
+  trapper_support_relocate:
+    display: "재배치"
+    job: trapper
+    stage: TIER1
+    requireBranch: support
+    tree:
+      parent: trapper_support_beacon
+      branch: null
+    cost:
+      mana: 30
+      manaPerLevel: 0.7
+    cooldown:
+      seconds: 8.0
+      reductionPerLevel: 0.0
+    maxLevel: 9999
+    power:
+      base: 55.0
+      scaling:
+        type: DIMINISHING
+        coefficient: 6.0
+        exponent: 0.5
+      statScaling:
+        agility: 1.6
+    effects:
+      - type: DAMAGE_AREA
+        range: 7.0
