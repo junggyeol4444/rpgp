@@ -13,6 +13,7 @@ import com.example.rpgcore.command.admin.DataResetCommand;
 import com.example.rpgcore.command.admin.DebugCommand;
 import com.example.rpgcore.command.admin.ExpCommand;
 import com.example.rpgcore.command.admin.JobResetCommand;
+import com.example.rpgcore.command.admin.LifeAdminCommand;
 import com.example.rpgcore.command.admin.ReloadCommand;
 import com.example.rpgcore.command.admin.SaveCommand;
 import com.example.rpgcore.command.admin.BindResetCommand;
@@ -30,6 +31,7 @@ import com.example.rpgcore.command.admin.StatusCommand;
 import com.example.rpgcore.command.sub.InfoCommand;
 import com.example.rpgcore.command.sub.BindCommand;
 import com.example.rpgcore.command.sub.JobCommand;
+import com.example.rpgcore.command.sub.LifeCommand;
 import com.example.rpgcore.command.sub.QuestCommand;
 import com.example.rpgcore.command.sub.SkillCommand;
 import com.example.rpgcore.command.sub.StatCommand;
@@ -40,6 +42,8 @@ import com.example.rpgcore.core.MainThreadExecutor;
 import com.example.rpgcore.core.ServiceRegistry;
 import com.example.rpgcore.job.JobService;
 import com.example.rpgcore.level.CombatLevelService;
+import com.example.rpgcore.life.LifeTrackService;
+import com.example.rpgcore.life.listener.LifeListener;
 import com.example.rpgcore.player.PlayerManager;
 import com.example.rpgcore.economy.CurrencyService;
 import com.example.rpgcore.economy.EconomyBridge;
@@ -91,7 +95,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  * <p>현재 범위는 지시서 14장의 1단계(골격과 전투 레벨),
  * 2단계(스탯과 전투), 3단계(기본 직업), 4단계(스킬 코어),
- * 5단계(퀘스트), 6단계(경제)다. 전직과 생활 트랙은 아직 없다.
+ * 5단계(퀘스트), 6단계(경제), 7단계(생활 트랙)다. 전직은 아직 없다.
  */
 public final class RpgCorePlugin extends JavaPlugin {
 
@@ -136,6 +140,8 @@ public final class RpgCorePlugin extends JavaPlugin {
                 new StatService(config, saves, players, currencies));
         JobService jobs = registry.register(JobService.class,
                 new JobService(config, saves, stats));
+        LifeTrackService lifeTracks = registry.register(LifeTrackService.class,
+                new LifeTrackService(config, saves, messages));
         HealthService health = registry.register(HealthService.class, new HealthService());
         DamagePipeline pipeline = registry.register(DamagePipeline.class,
                 new DamagePipeline(config, getLogger()));
@@ -185,6 +191,8 @@ public final class RpgCorePlugin extends JavaPlugin {
             hud.attach(rpgPlayer);
             // 접속할 때 일일·주간 주기가 지났는지 본다.
             quests.applyCycles(rpgPlayer, System.currentTimeMillis());
+            // 설정이 바뀌어 열려야 할 해금이 늘었을 수 있다.
+            lifeTracks.refreshUnlocks(rpgPlayer);
         });
         players.onDetach(rpgPlayer -> {
             hud.detach(rpgPlayer);
@@ -203,16 +211,18 @@ public final class RpgCorePlugin extends JavaPlugin {
                 new InputListener(players, bindings, skills, skillItems, messages), this);
         getServer().getPluginManager().registerEvents(
                 new ObjectiveListener(players, objectives, regions, npcs), this);
+        getServer().getPluginManager().registerEvents(
+                new LifeListener(players, lifeTracks), this);
 
         if (!registerCommands(config, repository, saves, levels, players, stats, jobs,
-                skills, bindings, quests, currencies, economy, guis, messages)) {
+                skills, bindings, quests, currencies, economy, lifeTracks, guis, messages)) {
             getLogger().severe("명령어를 등록하지 못했습니다. plugin.yml 의 commands 항목을 확인하세요.");
         }
 
         // 서버가 돌아가는 중에 켜졌다면 이미 접속해 있는 플레이어가 있다.
         players.loadOnlinePlayers();
 
-        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~6단계)");
+        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~7단계)");
     }
 
     @Override
@@ -239,6 +249,7 @@ public final class RpgCorePlugin extends JavaPlugin {
                                      QuestService quests,
                                      CurrencyService currencies,
                                      EconomyBridge economy,
+                                     LifeTrackService lifeTracks,
                                      GuiManager guis,
                                      Messages messages) {
         AdminCommand admin = new AdminCommand(messages);
@@ -259,6 +270,7 @@ public final class RpgCorePlugin extends JavaPlugin {
                 .register(new QuestResetCommand(players, quests, messages))
                 .register(new QuestCycleCommand(players, quests, messages))
                 .register(new CurrencyCommand(players, currencies, messages))
+                .register(new LifeAdminCommand(players, lifeTracks, messages))
                 .register(new DataDumpCommand(players, messages))
                 .register(new DataResetCommand(players, messages));
 
@@ -269,6 +281,7 @@ public final class RpgCorePlugin extends JavaPlugin {
         root.register(new SkillCommand(config, players, skills, guis, messages));
         root.register(new BindCommand(config, players, bindings, skills, guis, messages));
         root.register(new QuestCommand(config, players, quests, guis, messages));
+        root.register(new LifeCommand(players, lifeTracks, messages));
         root.register(admin);
 
         PluginCommand command = getCommand(PluginIds.ROOT_COMMAND);

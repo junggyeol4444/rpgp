@@ -6,6 +6,7 @@ import com.example.rpgcore.config.schema.CurveSettings;
 import com.example.rpgcore.config.schema.EconomySettings;
 import com.example.rpgcore.config.schema.GuiIcon;
 import com.example.rpgcore.config.schema.JobSettings;
+import com.example.rpgcore.config.schema.LifeSettings;
 import com.example.rpgcore.config.schema.GuiScreen;
 import com.example.rpgcore.config.schema.GeneralSettings;
 import com.example.rpgcore.config.schema.LevelSettings;
@@ -20,6 +21,10 @@ import com.example.rpgcore.job.JobBranch;
 import com.example.rpgcore.job.JobDefinition;
 import com.example.rpgcore.job.JobTree;
 import com.example.rpgcore.level.ExpSource;
+import com.example.rpgcore.life.LifeSource;
+import com.example.rpgcore.life.TrackDefinition;
+import com.example.rpgcore.life.TrackType;
+import com.example.rpgcore.life.unlock.TrackReward;
 import com.example.rpgcore.quest.QuestDefinition;
 import com.example.rpgcore.quest.QuestType;
 import com.example.rpgcore.quest.objective.Objective;
@@ -104,6 +109,7 @@ public final class ConfigManager implements Reloadable {
     private volatile Map<String, QuestDefinition> quests = new LinkedHashMap<>();
     private volatile Map<String, RegionDefinition> regions = new LinkedHashMap<>();
     private volatile EconomySettings economy = EconomySettings.defaults();
+    private volatile LifeSettings life = LifeSettings.defaults();
     private volatile Map<String, GuiScreen> guiScreens = new LinkedHashMap<>();
     private volatile boolean debug;
     private volatile int lastErrorCount;
@@ -129,6 +135,7 @@ public final class ConfigManager implements Reloadable {
         loadSkills(report);
         loadRegions(report);
         loadEconomy(report);
+        loadLife(report);
         loadQuests(report);
         loadGui(report);
         loadMessages(report);
@@ -184,6 +191,10 @@ public final class ConfigManager implements Reloadable {
 
     public EconomySettings economy() {
         return economy;
+    }
+
+    public LifeSettings life() {
+        return life;
     }
 
     /** gui.yml 의 화면. 없으면 기본 크기의 빈 화면을 준다. */
@@ -755,6 +766,122 @@ public final class ConfigManager implements Reloadable {
                 parsed.remove(skillDefinition.id());
             }
         }
+    }
+
+    private void loadLife(ValidationReport report) {
+        String file = "life.yml";
+        YamlConfiguration config = read(file, report);
+        if (config == null) {
+            life = LifeSettings.defaults();
+            return;
+        }
+
+        Map<TrackType, TrackDefinition> tracks = new EnumMap<>(TrackType.class);
+        ConfigurationSection root = config.getConfigurationSection("tracks");
+        if (root == null) {
+            report.error(file, "tracks", "트랙 정의가 없습니다. 생활 트랙이 오르지 않습니다.");
+        } else {
+            for (String key : root.getKeys(false)) {
+                TrackType type = TrackType.fromConfigKey(key);
+                if (type == null) {
+                    report.error(file, "tracks." + key,
+                            "알 수 없는 트랙이라 건너뜁니다. 쓸 수 있는 값: living, mining, crafting, alchemy");
+                    continue;
+                }
+                ConfigurationSection section = root.getConfigurationSection(key);
+                if (section == null) {
+                    report.error(file, "tracks." + key, "형식이 맞지 않아 건너뜁니다.");
+                    continue;
+                }
+                tracks.put(type, new TrackDefinition(type,
+                        section.getString("display", key),
+                        readSources(section.getConfigurationSection("sources"),
+                                file, "tracks." + key + ".sources", report)));
+            }
+        }
+
+        Map<TrackType, TrackReward> rewards = new EnumMap<>(TrackType.class);
+        ConfigurationSection rewardRoot = config.getConfigurationSection("rewards");
+        if (rewardRoot != null) {
+            for (String key : rewardRoot.getKeys(false)) {
+                TrackType type = TrackType.fromConfigKey(key);
+                if (type == null) {
+                    report.error(file, "rewards." + key, "알 수 없는 트랙이라 건너뜁니다.");
+                    continue;
+                }
+                ConfigurationSection section = rewardRoot.getConfigurationSection(key);
+                if (section == null) {
+                    report.error(file, "rewards." + key, "형식이 맞지 않아 건너뜁니다.");
+                    continue;
+                }
+                rewards.put(type, readTrackReward(section, file, "rewards." + key, report));
+            }
+        }
+
+        life = new LifeSettings(tracks, rewards);
+    }
+
+    /**
+     * 획득원 표를 읽는다.
+     * 값이 숫자면 대상 구분 없는 획득원, 구역이면 대상별 표다.
+     */
+    private Map<LifeSource, Map<String, Double>> readSources(ConfigurationSection section,
+                                                             String file, String path,
+                                                             ValidationReport report) {
+        Map<LifeSource, Map<String, Double>> result = new EnumMap<>(LifeSource.class);
+        if (section == null) {
+            return result;
+        }
+        for (String key : section.getKeys(false)) {
+            LifeSource source = LifeSource.fromConfig(key);
+            if (source == null) {
+                report.error(file, path + "." + key, "알 수 없는 획득원이라 건너뜁니다.");
+                continue;
+            }
+            Map<String, Double> byKey = new LinkedHashMap<>();
+            ConfigurationSection perTarget = section.getConfigurationSection(key);
+            if (perTarget != null) {
+                for (String target : perTarget.getKeys(false)) {
+                    byKey.put(target, perTarget.getDouble(target, 0));
+                }
+            } else if (section.get(key) instanceof Number number) {
+                byKey.put(TrackDefinition.DEFAULT_KEY, number.doubleValue());
+            } else {
+                report.error(file, path + "." + key,
+                        "숫자이거나 대상별 표여야 해서 건너뜁니다.");
+                continue;
+            }
+            result.put(source, byKey);
+        }
+        return result;
+    }
+
+    private TrackReward readTrackReward(ConfigurationSection section, String file,
+                                        String path, ValidationReport report) {
+        Map<String, Double> efficiency = new LinkedHashMap<>();
+        ConfigurationSection efficiencySection = section.getConfigurationSection("efficiency");
+        if (efficiencySection != null) {
+            for (String key : efficiencySection.getKeys(false)) {
+                efficiency.put(key, efficiencySection.getDouble(key, 0));
+            }
+        }
+
+        Map<Integer, List<String>> unlocks = new LinkedHashMap<>();
+        ConfigurationSection unlockSection = section.getConfigurationSection("unlockAtLevel");
+        if (unlockSection != null) {
+            for (String key : unlockSection.getKeys(false)) {
+                int level;
+                try {
+                    level = Integer.parseInt(key);
+                } catch (NumberFormatException e) {
+                    report.error(file, path + ".unlockAtLevel." + key,
+                            "레벨이 숫자가 아니라 건너뜁니다.");
+                    continue;
+                }
+                unlocks.put(level, new ArrayList<>(unlockSection.getStringList(key)));
+            }
+        }
+        return new TrackReward(efficiency, unlocks);
     }
 
     private void loadEconomy(ValidationReport report) {
