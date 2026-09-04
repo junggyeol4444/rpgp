@@ -369,13 +369,16 @@ public final class PlayerData {
     // quest:
     // ------------------------------------------------------------
 
-    /** 퀘스트 진행 상태. 5단계에서 쓰인다. */
+    /** 퀘스트 진행 상태. */
     public static final class Quest {
 
         /**
-         * 퀘스트 id -> 진행 상태.
-         * TODO 5단계: 진행 상태의 구조는 목표 판정 계층을 만들 때 확정한다.
-         *       그때까지는 저장 파일에 있던 값을 그대로 보존만 한다.
+         * 퀘스트 id -&gt; 진행 상태.
+         *
+         * <p>안에 들어가는 모양은 5단계에서
+         * {@link com.example.rpgcore.quest.QuestProgress} 로 확정했다.
+         * 여기서 {@code Object} 로 두는 것은 저장 계층이 퀘스트의 뜻을
+         * 몰라도 되게 하기 위해서다. 읽고 쓰는 것은 QuestProgress 가 한다.
          */
         private final Map<String, Object> active = new LinkedHashMap<>();
         private final List<String> completed = new ArrayList<>();

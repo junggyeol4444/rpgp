@@ -97,9 +97,9 @@ import org.bukkit.plugin.java.JavaPlugin;
  * <p>서비스를 만들어 {@link ServiceRegistry} 에 등록하고 순서대로 켠다.
  * 게임 로직은 각 서비스에 둔다.
  *
- * <p>현재 범위는 지시서 14장의 1단계(골격과 전투 레벨),
- * 2단계(스탯과 전투), 3단계(기본 직업), 4단계(스킬 코어),
- * 5단계(퀘스트), 6단계(경제), 7단계(생활 트랙)다. 전직은 아직 없다.
+ * <p>현재 범위는 지시서 14장의 1~10단계 전부다.
+ * 골격과 전투 레벨 · 스탯과 전투 · 기본 직업 · 스킬 코어 · 퀘스트 ·
+ * 경제 · 생활 트랙 · 1차 전직 · 2차 전직 · 퀘스트 GUI 에디터.
  */
 public final class RpgCorePlugin extends JavaPlugin {
 
@@ -174,7 +174,10 @@ public final class RpgCorePlugin extends JavaPlugin {
         QuestWriter questWriter = new QuestWriter(getDataFolder());
         QuestEditorService questEditor = registry.register(QuestEditorService.class,
                 new QuestEditorService(config, saves, questWriter, messages, getLogger()));
-        // 지시서 16장 6번이 확인될 때까지 NPC 연동은 비어 있는 구현을 쓴다.
+        // 지시서 16장 6번(Citizens 의 26.x 지원)은 확인했다. Citizens2 에
+        // v26_1_R1 · v26_2_R1 NMS 모듈이 있다. 다만 연동 코드는 실제 서버에서
+        // 이벤트 흐름을 봐야 쓸 수 있어서 아직 비어 있는 구현을 쓴다.
+        // 그래서 TALK 목표는 진행되지 않는다.
         NpcBridge npcs = new NoNpcBridge();
 
         GuiManager guis = registry.register(GuiManager.class, new GuiManager(players));

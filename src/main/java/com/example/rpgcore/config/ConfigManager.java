@@ -79,6 +79,13 @@ public final class ConfigManager implements Reloadable {
     /** 퀘스트 정의를 나눠 담는 디렉터리. (지시서 6장) */
     private static final String QUEST_DIRECTORY = "quests";
 
+    /**
+     * 처음 뜰 때 데이터 폴더로 꺼내는 파일.
+     *
+     * <p>주의: {@code mobs.yml} 은 꺼내기만 하고 아무도 읽지 않는다.
+     * 커스텀 몬스터가 아직 없어서다. 지금 이 파일을 고쳐도 서버 동작은
+     * 바뀌지 않는다. {@code mob} 패키지가 채워질 때 여기에 파싱이 붙는다.
+     */
     private static final List<String> DEFAULT_FILES = List.of(
             "config.yml",
             "levels.yml",
