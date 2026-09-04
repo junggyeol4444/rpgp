@@ -6,6 +6,7 @@ import com.example.rpgcore.config.schema.StatSettings;
 import com.example.rpgcore.config.validation.ValidationReport;
 import com.example.rpgcore.core.Lifecycle;
 import com.example.rpgcore.core.Reloadable;
+import com.example.rpgcore.economy.CurrencyService;
 import com.example.rpgcore.job.JobDefinition;
 import com.example.rpgcore.player.PlayerManager;
 import com.example.rpgcore.player.RpgPlayer;
@@ -46,14 +47,17 @@ public final class StatService implements Lifecycle, Reloadable {
     private final ConfigManager config;
     private final SaveScheduler saves;
     private final PlayerManager players;
+    private final CurrencyService currencies;
 
     /** 파생 수치가 다시 계산됐을 때 알림을 받을 대상. HP·UI 가 등록한다. */
     private Consumer<RpgPlayer> onRecalculated = rpgPlayer -> { };
 
-    public StatService(ConfigManager config, SaveScheduler saves, PlayerManager players) {
+    public StatService(ConfigManager config, SaveScheduler saves, PlayerManager players,
+                       CurrencyService currencies) {
         this.config = config;
         this.saves = saves;
         this.players = players;
+        this.currencies = currencies;
     }
 
     @Override
@@ -186,8 +190,7 @@ public final class StatService implements Lifecycle, Reloadable {
     /**
      * 분배 내역을 전부 되돌린다. 비용을 특수 재화로 받는다.
      *
-     * <p>TODO 6단계: 재화 차감은 CurrencyService 를 거치도록 바꾼다.
-     *      지금은 저장 데이터의 currency 를 직접 다룬다.
+     * <p>재화 차감은 {@link CurrencyService} 를 거친다. (6단계)
      */
     public Result reset(RpgPlayer rpgPlayer) {
         ResetSettings reset = config.stats().reset();
@@ -206,12 +209,12 @@ public final class StatService implements Lifecycle, Reloadable {
         }
 
         long cost = reset.costFor(combat.statResetCount());
-        long owned = data.currency(reset.currencyId());
-        if (owned < cost) {
+        if (cost > 0
+                && currencies.withdraw(rpgPlayer, reset.currencyId(), cost)
+                        != CurrencyService.Result.OK) {
             return Result.NOT_ENOUGH_CURRENCY;
         }
 
-        data.currency().put(reset.currencyId(), owned - cost);
         combat.stats().clear();
         combat.statPoints(combat.statPoints() + refund);
         combat.statResetCount(combat.statResetCount() + 1);

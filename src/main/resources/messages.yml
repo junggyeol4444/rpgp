@@ -88,6 +88,8 @@ command:
       desc: "퀘스트 진행 이력 초기화"
     questcycle:
       desc: "일일·주간 퀘스트 리셋"
+    currency:
+      desc: "특수 재화 지급·차감"
 
 level:
   up: "레벨 업! {before} -> {after}"
@@ -107,6 +109,7 @@ admin:
     online: " 캐시된 플레이어: {cached}명"
     autosave: " 자동 저장 간격: {seconds}초"
     debug: " 디버그: {state}"
+    economy: " 경제 연동: {name}"
     config-errors: " 마지막 설정 오류: {count}건"
   debug:
     toggled: "디버그 모드: {state}"
@@ -148,6 +151,10 @@ admin:
     done: "{player}의 퀘스트 이력을 초기화했습니다."
   questcycle:
     done: "{type} 퀘스트를 리셋했습니다. (대상 {players}명, {count}건)"
+  currency:
+    give: "{player}에게 {currency} {amount}를 지급했습니다. (보유 {owned})"
+    take: "{player}의 {currency} {amount}를 차감했습니다. (보유 {owned})"
+    unknown: "economy.yml 에 없는 재화입니다: {currency}"
 
 # 키 이름에 on/off 를 쓰지 않는다. YAML 1.1 에서 on/off/yes/no 는
 # 문자열이 아니라 불리언으로 해석되어 경로가 state.true / state.false 가 된다.

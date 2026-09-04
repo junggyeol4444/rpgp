@@ -3,7 +3,7 @@
 마인크래프트 RPG 플러그인. 기획안 `rpg_plugin_design_v0.3` 과
 구현 지시서 `rpg_plugin_implementation_guide_v1` 을 따른다.
 
-현재 상태: **1~5단계** (골격과 전투 레벨 / 스탯과 전투 / 기본 직업 / 스킬 코어 / 퀘스트) + 지시서 3장 패키지 골격.
+현재 상태: **1~6단계** (골격과 전투 레벨 / 스탯과 전투 / 기본 직업 / 스킬 코어 / 퀘스트 / 경제) + 지시서 3장 패키지 골격.
 
 ## Paper API 검증 결과
 
@@ -12,7 +12,7 @@
 `tools/verify-against-paper.sh` 를 두었다. 이 스크립트는 Paper 저장소의
 API 소스와 Maven Central 의 의존성을 받아 플러그인 전체를 컴파일한다.
 
-**결과: 오류 0.** (`ver/26.1.2` 기준, `-Xlint:all`)
+**결과: 오류 0.** (Paper `ver/26.1.2` + VaultUnlockedAPI 기준, `-Xlint:all`)
 
 | 16장 항목 | 결과 | 근거 |
 |---|---|---|
@@ -22,7 +22,7 @@ API 소스와 Maven Central 의 의존성을 받아 플러그인 전체를 컴�
 | 4. Paper 점프 이벤트 | 있음 | `com.destroystokyo.paper.event.player.PlayerJumpEvent`. 조합 수는 12가 아니라 **14** |
 | 5. 좌클릭 허공 감지 | 절반 | `Action.LEFT_CLICK_AIR` 상수는 있다. 실제로 매번 서버까지 오는지는 구동해 봐야 안다 |
 | 6. Citizens 26.x | 확인 | Citizens2 저장소에 `v26_1_R1`, `v26_2_R1` NMS 모듈이 있다 |
-| 7. 원본 Vault 26.x | 확인 | VaultAPI 는 순수 인터페이스 5개라 버전을 타지 않는다. VaultUnlocked 2.20.2 는 플러그인 이름을 `Vault` 로 등록하는 드롭인 대체품이고, 레거시 `vault.economy.Economy` 와 신규 `vault2.economy.Economy` 를 함께 제공한다 |
+| 7. 원본 Vault 26.x | 확인 | VaultAPI 는 순수 인터페이스 5개라 버전을 타지 않는다. VaultUnlocked 2.20.2 는 플러그인 이름을 `Vault` 로 등록하는 드롭인 대체품이고, 레거시 `vault.economy.Economy` 와 신규 `vault2.economy.Economy` 를 함께 제공한다. 두 저장소의 레거시 인터페이스 메서드 목록이 완전히 같다 |
 
 ### 사용 중단 API 8곳
 
@@ -46,6 +46,9 @@ API 소스와 Maven Central 의 의존성을 받아 플러그인 전체를 컴�
 - 허공 좌클릭이 실제로 매번 이벤트로 오는지
 - 데미지 이벤트를 취소했을 때 넉백·피격 연출이 어떻게 되는지
 - Citizens 를 실제로 붙였을 때의 동작
+- `VaultUnlockedAPI:2.19` 가 `repo.codemc.io` 에 실제로 올라와 있는지.
+  좌표와 버전은 그 저장소 pom.xml 에서 가져왔지만 codemc 에 닿을 수 없는
+  환경이라 확인하지 못했다
 
 ## 빌드
 
@@ -146,6 +149,30 @@ tools/verify-against-paper.sh
 
 기획서에 리셋 기준 시각이 없어서, 정해진 시각 대신 "마지막 리셋으로부터
 24시간 / 7일"로 판단한다. 서버 시간대를 가정하지 않기 위해서다.
+
+## 6단계에서 동작하는 것
+
+- Vault 어댑터. 원본 Vault 와 VaultUnlocked 어느 쪽이 있어도 붙고,
+  둘 다 없어도 서버가 뜬다 (지시서 0장 6번)
+- 특수 재화(`CurrencyService`). 경제 플러그인과 무관하게 항상 동작한다
+- 스탯 초기화 비용과 퀘스트 보상이 `CurrencyService` 를 거친다
+- `/rpg admin currency`, `/rpg admin status` 에 경제 연동 표시
+
+### 의존성 하나로 양쪽을 덮는 이유
+
+`VaultUnlockedAPI` 하나만 `compileOnly` 로 건다. 이 API 가 레거시
+`net.milkbowl.vault.economy.Economy` 를 그대로 담고 있고, 원본 VaultAPI
+저장소의 같은 인터페이스와 메서드 목록이 **완전히 일치**하는 것을
+확인했다. 새 `net.milkbowl.vault2.economy.Economy` 도 함께 들어 있다.
+
+원본 VaultAPI 는 Maven Central 에 없고(404) GitHub Packages 로만
+배포되어 의존성으로 걸기 번거롭다. VaultUnlockedAPI 는 `repo.codemc.io`
+에 있다.
+
+찾는 순서는 `economy.yml` 의 `vault.preferUnlocked` 가 정한다.
+Vault 클래스는 `Vault` 라는 이름의 플러그인이 실제로 있을 때만 건드리고,
+없을 때 나는 `LinkageError` 까지 잡는다. VaultUnlocked 는 플러그인
+이름을 `Vault` 로 등록하는 드롭인 대체품이라 이름 검사 하나로 덮인다.
 
 ### 표시 API 주의
 

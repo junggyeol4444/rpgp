@@ -16,6 +16,7 @@ import com.example.rpgcore.command.admin.JobResetCommand;
 import com.example.rpgcore.command.admin.ReloadCommand;
 import com.example.rpgcore.command.admin.SaveCommand;
 import com.example.rpgcore.command.admin.BindResetCommand;
+import com.example.rpgcore.command.admin.CurrencyCommand;
 import com.example.rpgcore.command.admin.QuestAdminCommand;
 import com.example.rpgcore.command.admin.QuestCycleCommand;
 import com.example.rpgcore.command.admin.QuestResetCommand;
@@ -40,6 +41,9 @@ import com.example.rpgcore.core.ServiceRegistry;
 import com.example.rpgcore.job.JobService;
 import com.example.rpgcore.level.CombatLevelService;
 import com.example.rpgcore.player.PlayerManager;
+import com.example.rpgcore.economy.CurrencyService;
+import com.example.rpgcore.economy.EconomyBridge;
+import com.example.rpgcore.economy.EconomyBridgeFactory;
 import com.example.rpgcore.npc.NoNpcBridge;
 import com.example.rpgcore.npc.NpcBridge;
 import com.example.rpgcore.quest.QuestService;
@@ -87,7 +91,7 @@ import org.bukkit.plugin.java.JavaPlugin;
  *
  * <p>현재 범위는 지시서 14장의 1단계(골격과 전투 레벨),
  * 2단계(스탯과 전투), 3단계(기본 직업), 4단계(스킬 코어),
- * 5단계(퀘스트)다. 전직과 경제·생활 트랙은 아직 없다.
+ * 5단계(퀘스트), 6단계(경제)다. 전직과 생활 트랙은 아직 없다.
  */
 public final class RpgCorePlugin extends JavaPlugin {
 
@@ -122,8 +126,14 @@ public final class RpgCorePlugin extends JavaPlugin {
                 new CombatLevelService(config, saves, messages));
         PlayerManager players = registry.register(PlayerManager.class,
                 new PlayerManager(cache, saves, messages, getLogger()));
+        CurrencyService currencies = registry.register(CurrencyService.class,
+                new CurrencyService(config, saves));
+        EconomyBridge economy = EconomyBridgeFactory.resolve(getServer(),
+                config.economy().vaultEnabled(), config.economy().preferUnlocked(), getLogger());
+        registry.register(EconomyBridge.class, economy);
+
         StatService stats = registry.register(StatService.class,
-                new StatService(config, saves, players));
+                new StatService(config, saves, players, currencies));
         JobService jobs = registry.register(JobService.class,
                 new JobService(config, saves, stats));
         HealthService health = registry.register(HealthService.class, new HealthService());
@@ -147,7 +157,7 @@ public final class RpgCorePlugin extends JavaPlugin {
 
         RegionService regions = registry.register(RegionService.class,
                 new RegionService(config));
-        RewardService rewards = new RewardService(levels, saves);
+        RewardService rewards = new RewardService(levels, saves, currencies);
         QuestService quests = registry.register(QuestService.class,
                 new QuestService(config, saves, rewards, messages));
         ObjectiveTracker objectives = new ObjectiveTracker(quests);
@@ -195,14 +205,14 @@ public final class RpgCorePlugin extends JavaPlugin {
                 new ObjectiveListener(players, objectives, regions, npcs), this);
 
         if (!registerCommands(config, repository, saves, levels, players, stats, jobs,
-                skills, bindings, quests, guis, messages)) {
+                skills, bindings, quests, currencies, economy, guis, messages)) {
             getLogger().severe("명령어를 등록하지 못했습니다. plugin.yml 의 commands 항목을 확인하세요.");
         }
 
         // 서버가 돌아가는 중에 켜졌다면 이미 접속해 있는 플레이어가 있다.
         players.loadOnlinePlayers();
 
-        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~5단계)");
+        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~6단계)");
     }
 
     @Override
@@ -227,12 +237,14 @@ public final class RpgCorePlugin extends JavaPlugin {
                                      SkillService skills,
                                      BindingService bindings,
                                      QuestService quests,
+                                     CurrencyService currencies,
+                                     EconomyBridge economy,
                                      GuiManager guis,
                                      Messages messages) {
         AdminCommand admin = new AdminCommand(messages);
         admin.register(new ReloadCommand(registry, config, saves, messages))
                 .register(new SaveCommand(saves, messages))
-                .register(new StatusCommand(version(), config, repository, players, messages))
+                .register(new StatusCommand(version(), config, repository, players, economy, messages))
                 .register(new DebugCommand(config, messages))
                 .register(new SetLevelCommand(players, levels, messages))
                 .register(new ExpCommand(players, levels, messages))
@@ -246,6 +258,7 @@ public final class RpgCorePlugin extends JavaPlugin {
                 .register(new QuestAdminCommand(players, quests, messages))
                 .register(new QuestResetCommand(players, quests, messages))
                 .register(new QuestCycleCommand(players, quests, messages))
+                .register(new CurrencyCommand(players, currencies, messages))
                 .register(new DataDumpCommand(players, messages))
                 .register(new DataResetCommand(players, messages));
 

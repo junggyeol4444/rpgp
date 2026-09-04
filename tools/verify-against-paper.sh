@@ -41,9 +41,14 @@ if [ ! -d "$WORK/paper/.git" ]; then
   git -C "$WORK/paper" sparse-checkout set paper-api
 fi
 
-echo "[2/4] brigadier 소스 (Maven Central 에 없음)"
+echo "[2/4] brigadier · VaultUnlockedAPI 소스"
+# brigadier 는 Maven Central 에 없다.
 [ -d "$WORK/brigadier/.git" ] || \
   git clone --depth 1 https://github.com/Mojang/brigadier.git "$WORK/brigadier"
+# VaultUnlockedAPI 는 repo.codemc.io 에만 있다. 막힌 환경을 위해 소스로 받는다.
+[ -d "$WORK/vaultunlockedapi/.git" ] || \
+  git clone --depth 1 https://github.com/TheNewEconomy/VaultUnlockedAPI.git \
+      "$WORK/vaultunlockedapi"
 
 echo "[3/4] paper-api 의존성 (Maven Central)"
 fetch org/jetbrains annotations 26.0.2
@@ -77,14 +82,15 @@ echo "[4/4] 컴파일"
 API="$WORK/paper/paper-api/src/main/java"
 GEN="$WORK/paper/paper-api/src/generated/java"
 BRIG="$WORK/brigadier/src/main/java"
+VAULT="$WORK/vaultunlockedapi/src/main/java"
 OUT="$WORK/classes"
 rm -rf "$OUT"; mkdir -p "$OUT"
 
 javac -Xlint:all -proc:none -encoding UTF-8 \
       -cp "$LIB/*" \
-      -sourcepath "$API:$GEN:$BRIG:src/main/java" \
+      -sourcepath "$API:$GEN:$BRIG:$VAULT:src/main/java" \
       -d "$OUT" \
       $(find src/main/java -name '*.java')
 
 echo
-echo "컴파일 통과. 실제 Paper API($PAPER_REF) 기준 오류 0."
+echo "컴파일 통과. 실제 Paper API($PAPER_REF) 와 VaultUnlockedAPI 기준 오류 0."

@@ -1,7 +1,9 @@
 package com.example.rpgcore.config;
 
 import com.example.rpgcore.config.schema.CombatSettings;
+import com.example.rpgcore.config.schema.CurrencyDefinition;
 import com.example.rpgcore.config.schema.CurveSettings;
+import com.example.rpgcore.config.schema.EconomySettings;
 import com.example.rpgcore.config.schema.GuiIcon;
 import com.example.rpgcore.config.schema.JobSettings;
 import com.example.rpgcore.config.schema.GuiScreen;
@@ -101,6 +103,7 @@ public final class ConfigManager implements Reloadable {
     private volatile SkillTree skillTree = SkillTree.empty();
     private volatile Map<String, QuestDefinition> quests = new LinkedHashMap<>();
     private volatile Map<String, RegionDefinition> regions = new LinkedHashMap<>();
+    private volatile EconomySettings economy = EconomySettings.defaults();
     private volatile Map<String, GuiScreen> guiScreens = new LinkedHashMap<>();
     private volatile boolean debug;
     private volatile int lastErrorCount;
@@ -125,6 +128,7 @@ public final class ConfigManager implements Reloadable {
         loadJobs(report);
         loadSkills(report);
         loadRegions(report);
+        loadEconomy(report);
         loadQuests(report);
         loadGui(report);
         loadMessages(report);
@@ -176,6 +180,10 @@ public final class ConfigManager implements Reloadable {
     /** regions.yml 에서 읽은 지역. */
     public Map<String, RegionDefinition> regions() {
         return regions;
+    }
+
+    public EconomySettings economy() {
+        return economy;
     }
 
     /** gui.yml 의 화면. 없으면 기본 크기의 빈 화면을 준다. */
@@ -747,6 +755,42 @@ public final class ConfigManager implements Reloadable {
                 parsed.remove(skillDefinition.id());
             }
         }
+    }
+
+    private void loadEconomy(ValidationReport report) {
+        String file = "economy.yml";
+        YamlConfiguration config = read(file, report);
+        if (config == null) {
+            economy = EconomySettings.defaults();
+            return;
+        }
+        EconomySettings defaults = EconomySettings.defaults();
+
+        Map<String, CurrencyDefinition> parsed = new LinkedHashMap<>();
+        ConfigurationSection root = config.getConfigurationSection("currencies");
+        if (root == null) {
+            report.error(file, "currencies", "특수 재화 정의가 없습니다.");
+        } else {
+            for (String id : root.getKeys(false)) {
+                ConfigurationSection section = root.getConfigurationSection(id);
+                if (section == null) {
+                    report.error(file, "currencies." + id, "형식이 맞지 않아 건너뜁니다.");
+                    continue;
+                }
+                long max = (long) section.getDouble("max", -1);
+                if (max < -1) {
+                    report.error(file, "currencies." + id + ".max",
+                            "-1(상한 없음) 이거나 0 이상이어야 해서 -1로 되돌립니다: " + max);
+                    max = -1;
+                }
+                parsed.put(id, new CurrencyDefinition(id, section.getString("display", id), max));
+            }
+        }
+
+        economy = new EconomySettings(
+                config.getBoolean("vault.enabled", defaults.vaultEnabled()),
+                config.getBoolean("vault.preferUnlocked", defaults.preferUnlocked()),
+                parsed);
     }
 
     private void loadRegions(ValidationReport report) {

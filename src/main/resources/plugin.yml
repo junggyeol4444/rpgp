@@ -96,6 +96,7 @@ permissions:
       rpgcore.admin.quest: true
       rpgcore.admin.questreset: true
       rpgcore.admin.questcycle: true
+      rpgcore.admin.currency: true
   rpgcore.admin.reload:
     default: op
   rpgcore.admin.save:
@@ -131,4 +132,6 @@ permissions:
   rpgcore.admin.questreset:
     default: op
   rpgcore.admin.questcycle:
+    default: op
+  rpgcore.admin.currency:
     default: op

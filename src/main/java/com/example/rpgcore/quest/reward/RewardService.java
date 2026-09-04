@@ -1,5 +1,6 @@
 package com.example.rpgcore.quest.reward;
 
+import com.example.rpgcore.economy.CurrencyService;
 import com.example.rpgcore.level.CombatLevelService;
 import com.example.rpgcore.level.ExpSource;
 import com.example.rpgcore.player.RpgPlayer;
@@ -18,17 +19,19 @@ public final class RewardService {
 
     private final CombatLevelService levels;
     private final SaveScheduler saves;
+    private final CurrencyService currencies;
 
-    public RewardService(CombatLevelService levels, SaveScheduler saves) {
+    public RewardService(CombatLevelService levels, SaveScheduler saves,
+                         CurrencyService currencies) {
         this.levels = levels;
         this.saves = saves;
+        this.currencies = currencies;
     }
 
     /**
      * 보상을 준다.
      *
-     * <p>TODO 6단계: 재화 지급은 CurrencyService 를 거치도록 바꾼다.
-     *      지금은 저장 데이터의 currency 를 직접 다룬다.
+     * <p>재화 지급은 {@link CurrencyService} 를 거친다. (6단계)
      */
     public void grant(RpgPlayer rpgPlayer, QuestReward reward) {
         if (reward.isEmpty()) {
@@ -42,11 +45,10 @@ public final class RewardService {
         if (reward.statPoints() > 0) {
             data.combat().statPoints(data.combat().statPoints() + reward.statPoints());
         }
-        for (Map.Entry<String, Long> entry : reward.currency().entrySet()) {
-            long owned = data.currency(entry.getKey());
-            data.currency().put(entry.getKey(), owned + Math.max(0, entry.getValue()));
-        }
         saves.markDirty(data, SavePriority.IMMEDIATE);
+        for (Map.Entry<String, Long> entry : reward.currency().entrySet()) {
+            currencies.deposit(rpgPlayer, entry.getKey(), entry.getValue());
+        }
 
         // 경험치는 레벨업 판정까지 태워야 하므로 마지막에 준다.
         if (reward.combatExp() > 0) {

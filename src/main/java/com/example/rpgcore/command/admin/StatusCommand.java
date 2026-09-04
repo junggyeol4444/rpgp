@@ -1,6 +1,7 @@
 package com.example.rpgcore.command.admin;
 
 import com.example.rpgcore.config.ConfigManager;
+import com.example.rpgcore.economy.EconomyBridge;
 import com.example.rpgcore.player.PlayerManager;
 import com.example.rpgcore.storage.PlayerDataRepository;
 import com.example.rpgcore.util.Messages;
@@ -13,14 +14,16 @@ public final class StatusCommand implements AdminSubCommand {
     private final ConfigManager config;
     private final PlayerDataRepository repository;
     private final PlayerManager players;
+    private final EconomyBridge economy;
     private final Messages messages;
 
     public StatusCommand(String version, ConfigManager config, PlayerDataRepository repository,
-                         PlayerManager players, Messages messages) {
+                         PlayerManager players, EconomyBridge economy, Messages messages) {
         this.version = version;
         this.config = config;
         this.repository = repository;
         this.players = players;
+        this.economy = economy;
         this.messages = messages;
     }
 
@@ -44,6 +47,7 @@ public final class StatusCommand implements AdminSubCommand {
                 "seconds", config.general().storage().autoSaveIntervalSeconds());
         messages.sendPlain(sender, "admin.status.debug",
                 "state", messages.format(config.debug() ? "state.enabled" : "state.disabled"));
+        messages.sendPlain(sender, "admin.status.economy", "name", economy.name());
         messages.sendPlain(sender, "admin.status.config-errors",
                 "count", config.lastErrorCount());
     }
