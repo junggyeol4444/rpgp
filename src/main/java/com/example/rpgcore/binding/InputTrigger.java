@@ -6,15 +6,13 @@ package com.example.rpgcore.binding;
  * <p>키 조합의 뒤쪽 원소. 조합 = 유지 상태 1개 + 순간 입력 1개이며,
  * 가능한 조합 수는 2 x 7 = 14 이다.
  *
- * <p>[확인 필요 - 지시서 16장 4번]
- * {@link #JUMP} 는 Paper 점프 이벤트가 26.x 에 존재하는지 확인한 뒤에만
- * 쓴다. 존재하지 않으면 이 상수를 목록에서 빼고 조합 수를 12로 줄인다.
+ * <p>[지시서 16장 4번 확인 완료]
+ * Paper 26.1.2 에 {@code com.destroystokyo.paper.event.player.PlayerJumpEvent}
+ * 가 있다. 따라서 {@link #JUMP} 를 그대로 쓰고 조합 수는 14다.
  *
- * <p>[확인 필요 - 지시서 16장 5번]
- * {@link #LEFT_CLICK} 의 허공 감지는 버전마다 이벤트 동작이 다를 수
- * 있으므로 실제 구동으로 확인한 뒤 확정한다.
- *
- * <p>실제 입력 감지는 4단계에서 구현한다.
+ * <p>[지시서 16장 5번 일부 확인]
+ * {@code Action.LEFT_CLICK_AIR} 상수는 26.1.2 에 있다.
+ * 다만 허공 좌클릭이 실제로 매번 서버까지 오는지는 구동해 봐야 안다.
  */
 public enum InputTrigger {
     /** 좌클릭 */
@@ -27,7 +25,7 @@ public enum InputTrigger {
     DROP_ITEM,
     /** 인벤토리 열기 (E) */
     OPEN_INVENTORY,
-    /** 점프 — 확인 후 사용 */
+    /** 점프 */
     JUMP,
     /** 핫바 슬롯 변경 */
     SLOT_CHANGE

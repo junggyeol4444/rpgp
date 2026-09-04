@@ -18,9 +18,8 @@ import org.bukkit.boss.BossBar;
  * 아무 것도 보이지 않는다. (지시서 15장: 다음 단계 기능을 미리
  * 절반만 만들어두지 않는다)
  *
- * <p>[확인 필요 - 지시서 16장]
- * {@code Bukkit#createBossBar} 와 {@code BossBar} API 가 26.x 에서
- * 유효한지 확인한다. config.yml 의 ui.channels.bossbar 로 끌 수 있다.
+ * <p>[확인 완료] {@code Bukkit#createBossBar(String, BarColor, BarStyle)} 는
+ * 26.1.2 에 있고 사용 중단이 아니다. Paper 26.1.2 API 소스로 컴파일해 확인했다. (tools/verify-against-paper.sh)
  */
 public final class BossBarChannel implements HudChannel {
 

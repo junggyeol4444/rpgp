@@ -7,9 +7,10 @@ import com.example.rpgcore.util.Messages;
 /**
  * 지시서 10장 — 탭 목록에 레벨 표시.
  *
- * <p>[확인 필요 - 지시서 16장]
- * {@code Player#setPlayerListHeaderFooter(String, String)} 가 26.x 에서
- * 유효한지 확인한다. config.yml 의 ui.channels.tab 으로 끌 수 있다.
+ * <p>[확인 완료] {@code Player#setPlayerListHeaderFooter(String, String)} 는
+ * 26.1.2 에 있다. {@code sendPlayerListHeaderAndFooter(Component, Component)}
+ * 로 대체하라는 사용 중단 표시가 붙어 있고, 제거 예정 표시는 없다.
+ * Paper 26.1.2 API 소스로 컴파일해 확인했다. (tools/verify-against-paper.sh)
  */
 public final class TabChannel implements HudChannel {
 

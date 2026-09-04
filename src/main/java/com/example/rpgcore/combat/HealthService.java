@@ -16,8 +16,8 @@ import org.bukkit.entity.Player;
  * 동기화 지점을 이 클래스 하나로 모은다. 다른 곳에서 setHealth 를
  * 부르지 않는다.
  *
- * <p>[확인 필요 - 지시서 16장]
- * {@code Player#setHealth(double)} 가 26.x 에서 유효한지 확인한다.
+ * <p>[확인 완료] {@code Damageable#setHealth(double)} 는 26.1.2 에 있고
+ * 사용 중단이 아니다. Paper 26.1.2 API 소스로 컴파일해 확인했다. (tools/verify-against-paper.sh)
  * 플러그인에서 이 API 를 부르는 곳은 이 클래스뿐이다.
  *
  * <p>내부 HP 는 저장 대상이 아니다. (지시서 7장 스키마에 없음)

@@ -17,11 +17,12 @@ import org.bukkit.scoreboard.Scoreboard;
 /**
  * 지시서 10장 — 스코어보드에 레벨 · 경험치.
  *
- * <p>[확인 필요 - 지시서 16장]
- * 스코어보드 API({@code getScoreboardManager}, {@code registerNewObjective},
- * {@code DisplaySlot})가 26.x 에서 유효한지 확인한다.
- * 스코어보드를 만지는 곳은 이 파일뿐이며, config.yml 의
- * ui.channels.scoreboard 로 끌 수 있다.
+ * <p>[확인 완료] 스코어보드 API 는 26.1.2 에 그대로 있다.
+ * {@code registerNewObjective(String, String, String)} 만
+ * {@code registerNewObjective(String, Criteria, Component)} 로 대체하라는
+ * 사용 중단 표시가 붙어 있다(1.20.5부터). 제거 예정 표시는 없다.
+ * Paper 26.1.2 API 소스로 컴파일해 확인했다. (tools/verify-against-paper.sh)
+ * 스코어보드를 만지는 곳은 이 파일뿐이다.
  */
 public final class ScoreboardChannel implements HudChannel {
 

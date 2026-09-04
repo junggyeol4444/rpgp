@@ -14,10 +14,10 @@ import org.bukkit.inventory.InventoryHolder;
  * {@link InventoryHolder} 로 두면 제목 문자열을 비교하지 않고도
  * 우리 화면인지 알 수 있다.
  *
- * <p>[확인 필요 - 지시서 16장]
- * {@code Bukkit#createInventory(InventoryHolder, int, String)} 의 제목
- * 인자가 26.x 에서 문자열인지 확인한다. 인벤토리를 만드는 곳은
- * 이 클래스 한 줄뿐이다.
+ * <p>[확인 완료] {@code Bukkit#createInventory(InventoryHolder, int, String)}
+ * 는 26.1.2 에 있다. 컴포넌트를 받는 쪽으로 대체하라는 사용 중단 표시가
+ * 붙어 있고, 제거 예정 표시는 없다. Paper 26.1.2 API 소스로 컴파일해 확인했다. (tools/verify-against-paper.sh)
+ * 인벤토리를 만드는 곳은 이 클래스 한 줄뿐이다.
  */
 public abstract class Gui implements InventoryHolder {
 

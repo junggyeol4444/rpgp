@@ -6,6 +6,7 @@ group = 'com.example'
 version = '0.1.0-SNAPSHOT'
 
 // 지시서 1장 / 2장: Java toolchain 25 고정
+// Paper 26.1.2 README 도 같은 값을 쓴다.
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
@@ -14,17 +15,18 @@ java {
 
 repositories {
     mavenCentral()
-
-    // TODO [검증 1 - 지시서 16장] Paper 저장소 URL을 실제로 확인한 뒤 추가한다.
-    //      기억으로 적지 말 것. 확인 전까지는 비워 둔다.
-    // maven { url = '<확인 후 기입>' }
+    // 지시서 16장 1번 확인 결과.
+    // 출처: PaperMC/Paper 저장소 ver/26.1.2 브랜치의 README.md
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
 }
 
 dependencies {
-    // TODO [검증 1 - 지시서 16장] paper-api 의존성 좌표와 버전 문자열을
-    //      26.x 기준으로 실제 저장소에서 확인한 뒤 적는다.
-    //      확인 전까지 주석 상태이므로 이 프로젝트는 컴파일되지 않는다.
-    // compileOnly 'io.papermc.paper:paper-api:<확인 후 기입>'
+    // 지시서 16장 1번 확인 결과.
+    // 출처: PaperMC/Paper ver/26.1.2 의 README.md 에 실린 그대로다.
+    // 26.1.2 는 26.x 의 첫 릴리스이며(저장소 태그 기준 26.x 태그는 이것뿐),
+    // 여기에 맞춰 두면 26.x 전 구간을 대상으로 삼게 된다.
+    // ".build.+" 는 같은 26.1.2 안에서 최신 빌드를 쓴다는 뜻이다.
+    compileOnly 'io.papermc.paper:paper-api:26.1.2.build.+'
 }
 
 // 지시서 2장: 인코딩 UTF-8 고정

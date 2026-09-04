@@ -5,3 +5,6 @@ out/
 .idea/
 *.iml
 .vscode/
+
+# 검증 스크립트 작업 디렉터리
+.verify/

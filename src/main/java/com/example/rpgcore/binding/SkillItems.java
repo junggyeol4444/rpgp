@@ -15,10 +15,10 @@ import org.bukkit.plugin.Plugin;
  *
  * <p>아이템에 스킬 id 를 심어 두고, 들고 우클릭하면 그 스킬이 나간다.
  *
- * <p>[확인 필요 - 지시서 16장]
- * {@code PersistentDataContainer} 와 {@code NamespacedKey} 가 26.x 에서
- * 유효한지 확인한다. 아이템에 값을 심고 읽는 곳은 이 클래스뿐이라
- * 다르면 여기만 고치면 된다.
+ * <p>[확인 완료] {@code PersistentDataContainer} 와 {@code NamespacedKey} 는
+ * 26.1.2 에 있고 사용 중단이 아니다. Paper 26.1.2 API 소스로 컴파일해 확인했다. (tools/verify-against-paper.sh)
+ * 표시 이름을 붙이는 데 쓰는 {@code setDisplayName} · {@code setLore} 만
+ * 사용 중단 표시가 붙어 있다(제거 예정 아님).
  */
 public final class SkillItems {
 

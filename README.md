@@ -5,22 +5,47 @@
 
 현재 상태: **1~5단계** (골격과 전투 레벨 / 스탯과 전투 / 기본 직업 / 스킬 코어 / 퀘스트) + 지시서 3장 패키지 골격.
 
-## 착수 전에 반드시 채워야 하는 값
+## Paper API 검증 결과
 
-지시서 16장의 검증 항목 중 아래 세 가지는 값이 비어 있어서
-**지금 상태로는 빌드도, 서버 로드도 되지 않는다.** 실제로 확인한 값을
-넣어야 한다. 기억으로 적지 말 것.
+지시서 16장의 검증 항목을 실제 Paper 26.1.2 API 소스로 확인했다.
+`repo.papermc.io` 를 못 쓰는 환경에서도 재현할 수 있도록
+`tools/verify-against-paper.sh` 를 두었다. 이 스크립트는 Paper 저장소의
+API 소스와 Maven Central 의 의존성을 받아 플러그인 전체를 컴파일한다.
 
-| 항목 | 위치 | 지시서 |
+**결과: 오류 0.** (`ver/26.1.2` 기준, `-Xlint:all`)
+
+| 16장 항목 | 결과 | 근거 |
 |---|---|---|
-| Paper 저장소 URL | `build.gradle` `repositories` | 16장 1번 |
-| paper-api 좌표·버전 문자열 | `build.gradle` `dependencies` | 16장 1번 |
-| plugin.yml / paper-plugin.yml 중 권장 방식 | `src/main/resources/plugin.yml` | 16장 2번 |
-| api-version 값 | `src/main/resources/plugin.yml` | 16장 3번 |
+| 1. paper-api 좌표·버전 | 확인 | Paper `ver/26.1.2` 의 `README.md` 에 실린 `io.papermc.paper:paper-api:26.1.2.build.+` 와 저장소 URL 그대로 |
+| 2. plugin.yml / paper-plugin.yml | 확인 | 둘 다 있고 `PluginDescriptionFile` 은 사용 중단이 아니다. 부트스트랩 기능을 안 쓰므로 plugin.yml 유지 |
+| 3. api-version 형식 | 확인 | 패치 단위까지 올라간다. `gradle.properties` 의 `apiVersion=26.1.2`. 26.x 태그는 26.1.2 하나뿐이라 이 값이 26.x 시작점 |
+| 4. Paper 점프 이벤트 | 있음 | `com.destroystokyo.paper.event.player.PlayerJumpEvent`. 조합 수는 12가 아니라 **14** |
+| 5. 좌클릭 허공 감지 | 절반 | `Action.LEFT_CLICK_AIR` 상수는 있다. 실제로 매번 서버까지 오는지는 구동해 봐야 안다 |
+| 6. Citizens 26.x | 확인 | Citizens2 저장소에 `v26_1_R1`, `v26_2_R1` NMS 모듈이 있다 |
+| 7. 원본 Vault 26.x | 확인 | VaultAPI 는 순수 인터페이스 5개라 버전을 타지 않는다. VaultUnlocked 2.20.2 는 플러그인 이름을 `Vault` 로 등록하는 드롭인 대체품이고, 레거시 `vault.economy.Economy` 와 신규 `vault2.economy.Economy` 를 함께 제공한다 |
 
-나머지 검증 항목(점프 이벤트, 좌클릭 허공 감지, Citizens, 원본 Vault)은
-해당 기능을 만드는 단계에서 확인한다. 코드에 `[확인 필요]` 주석으로
-표시해 두었다.
+### 사용 중단 API 8곳
+
+컴파일은 통과하지만 아래는 Adventure 컴포넌트 방식으로 대체하라는
+사용 중단 표시가 붙어 있다. **제거 예정(forRemoval) 표시는 없다.**
+
+| 파일 | API |
+|---|---|
+| `ui/actionbar/ActionBarChannel` | `Player.sendActionBar(String)` |
+| `ui/tab/TabChannel` | `Player.setPlayerListHeaderFooter(String, String)` |
+| `ui/scoreboard/ScoreboardChannel` | `Scoreboard.registerNewObjective(String, String, String)` |
+| `ui/gui/Gui` | `Bukkit.createInventory(holder, int, String)` |
+| `ui/gui/Icons` | `ItemMeta.setDisplayName` · `setLore` |
+| `binding/SkillItems` | `ItemMeta.setDisplayName` · `setLore` |
+
+`CommandSender.sendMessage(String)` 과 `Bukkit.createBossBar` 는 사용
+중단이 아니다.
+
+### 남은 확인 항목 (서버를 띄워야 알 수 있는 것)
+
+- 허공 좌클릭이 실제로 매번 이벤트로 오는지
+- 데미지 이벤트를 취소했을 때 넉백·피격 연출이 어떻게 되는지
+- Citizens 를 실제로 붙였을 때의 동작
 
 ## 빌드
 
@@ -28,8 +53,14 @@
 ./gradlew build
 ```
 
-- Java toolchain 25 고정 (지시서 1장·2장)
+- Java toolchain 25 고정 (지시서 1장·2장, Paper 26.1.2 README 와 동일)
 - 인코딩 UTF-8 고정
+
+`repo.papermc.io` 에 닿을 수 없는 환경이라면:
+
+```
+tools/verify-against-paper.sh
+```
 
 ## 1단계에서 동작하는 것
 
@@ -79,13 +110,6 @@
 - 스킬트리 GUI (분기 확정 시 한 번 더 확인), 스킬 등록 GUI
 - 기본 직업 7개분 스킬 42개
 - `/rpg skill`, `/rpg bind`, `/rpg admin skillpoint|skill|bindreset`
-
-### 조합 수가 14가 아니라 12인 이유
-
-지시서 16장 4번(Paper 점프 이벤트의 26.x 존재 여부)이 확인되지 않아
-`JUMP` 를 목록에서 뺐다. 지시서 10장 [구현 메모]가 지시한 대로다.
-확인되면 `BindingService.AVAILABLE_TRIGGERS` 에서 빼기만 없애면
-자동으로 14가 된다.
 
 ### skills.yml 은 밸런스 미확정
 
@@ -139,7 +163,6 @@
 - `/rpg admin setjob` 은 `base` 만 받는다. 1차·2차는 8·9단계에서 넓힌다.
 - `jobs.yml` 의 기본 직업 7개 중 `swordsman` 외에는 `statBonusPerLevel`
   이 비어 있다. 밸런스 미정이라 채우지 않았다.
-- 스킬 아이템은 `PersistentDataContainer` 로 알아본다. 26.x 확인 대상이다.
 - `/rpg admin questcycle` 은 접속 중인 플레이어만 리셋한다.
 - 관리자 명령은 접속 중인 플레이어만 대상으로 한다. 오프라인 대상
   조작은 저장소 비동기 읽기가 필요하며 아직 넣지 않았다.

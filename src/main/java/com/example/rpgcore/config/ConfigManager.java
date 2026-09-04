@@ -60,8 +60,8 @@ import org.bukkit.plugin.Plugin;
  * 해당 단계에서 해석기를 붙인다. (지시서 14장: 지정된 단계 밖의 기능을
  * 미리 만들지 않는다)
  *
- * <p>[확인 필요 - 지시서 16장]
- * Bukkit 설정 API 사용처는 이 클래스와 YamlRepository 두 곳뿐이다.
+ * <p>[확인 완료] Bukkit 설정 API 는 26.1.2 에 그대로 있다.
+ * 사용처는 이 클래스와 YamlRepository 두 곳뿐이다.
  */
 public final class ConfigManager implements Reloadable {
 

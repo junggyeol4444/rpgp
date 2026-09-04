@@ -25,10 +25,9 @@ import org.bukkit.configuration.file.YamlConfiguration;
  * <p>YAML 관련 타입은 이 클래스 밖으로 나가지 않는다. 바깥과는
  * {@link PlayerData} 로만 주고받는다.
  *
- * <p>[확인 필요 - 지시서 16장]
- * Bukkit 설정 API({@link YamlConfiguration})가 26.x 에서 그대로인지
- * 확인한 뒤 확정한다. 플러그인에서 이 API를 쓰는 곳은
- * 이 클래스와 ConfigManager 두 곳뿐이다.
+ * <p>[확인 완료] {@link YamlConfiguration} 은 26.1.2 에 그대로 있다.
+ * Paper 26.1.2 API 소스로 컴파일해 확인했다. (tools/verify-against-paper.sh)
+ * 플러그인에서 이 API를 쓰는 곳은 이 클래스와 ConfigManager 두 곳뿐이다.
  */
 public final class YamlRepository implements PlayerDataRepository {
 

@@ -1,16 +1,19 @@
 # ================================================================
 # RpgCore plugin.yml
 # ----------------------------------------------------------------
-# [검증 2 - 지시서 16장]
-#   26.x에서 plugin.yml 방식과 paper-plugin.yml 방식 중 어느 쪽이
-#   권장되는지 확인한 뒤 선택한다. 현재는 plugin.yml로 두었으나
-#   확정된 것이 아니다.
+# [검증 2 - 지시서 16장] 확인 완료
+#   26.1.2 API 에 plugin.yml(PluginDescriptionFile)과
+#   paper-plugin.yml(PluginMeta) 두 방식이 모두 있다.
+#   PluginDescriptionFile 은 사용 중단이 아니고 PluginMeta 를 구현한다.
+#   이 플러그인은 부트스트랩·라이브러리 로더 기능을 쓰지 않으므로
+#   더 단순한 plugin.yml 을 쓴다.
 #
-# [검증 3 - 지시서 16장]
-#   api-version 값의 형식(패치 단위까지 올라가는지)과 하위 호환
-#   범위를 확인한 뒤 아래 api-version 줄의 주석을 풀고 값을 넣는다.
-#   26.x 전 버전 호환이 목표이므로 이 값이 호환 범위를 좌우한다.
-#   값을 넣기 전까지 이 플러그인은 서버에 로드되지 않는다.
+# [검증 3 - 지시서 16장] 확인 완료
+#   api-version 은 패치 단위까지 올라간다.
+#   Paper 저장소 ver/26.1.2 의 gradle.properties 에
+#   "apiVersion=26.1.2  # This is the current API version for use in
+#   (paper-)plugin.yml files" 라고 적혀 있다.
+#   26.x 태그는 26.1.2 하나뿐이라 이 값이 26.x 의 시작점이다.
 # ================================================================
 name: RpgCore
 version: '${pluginVersion}'
@@ -18,8 +21,7 @@ main: com.example.rpgcore.RpgCorePlugin
 description: RPG core systems for Paper
 author: junggyeol4444
 
-# TODO [검증 3] 실제 확인한 값으로 교체
-# api-version: '<확인 후 기입>'
+api-version: '26.1.2'
 
 # 지시서 0장 6번 / 15장: 외부 플러그인은 전부 soft-depend.
 # 해당 플러그인이 없어도 서버가 뜨고 그 기능만 비활성화된다.

@@ -36,19 +36,18 @@ public final class BindingService implements Lifecycle {
         SLOT_OUT_OF_RANGE,
         /** 이미 쓰이고 있는 키 조합 */
         COMBO_TAKEN,
-        /** 쓸 수 없는 입력 (미확인 이벤트 등) */
+        /** 쓸 수 없는 입력 */
         TRIGGER_UNAVAILABLE
     }
 
     /**
      * 지금 쓸 수 있는 순간 입력.
      *
-     * <p>지시서 16장 4번: Paper 점프 이벤트의 26.x 존재 여부가 확인되지
-     * 않았다. 확인 전까지 {@link InputTrigger#JUMP} 를 빼고 조합 수를
-     * 14 대신 12로 둔다. (지시서 10장 [구현 메모])
+     * <p>지시서 16장 4번을 확인한 결과 Paper 26.1.2 에 PlayerJumpEvent 가
+     * 있으므로 7종을 모두 쓴다. 조합 수는 2 x 7 = 14다. (기획서 6장)
      */
     private static final Set<InputTrigger> AVAILABLE_TRIGGERS =
-            EnumSet.complementOf(EnumSet.of(InputTrigger.JUMP));
+            EnumSet.allOf(InputTrigger.class);
 
     private final ConfigManager config;
     private final SaveScheduler saves;

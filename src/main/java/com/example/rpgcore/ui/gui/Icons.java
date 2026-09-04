@@ -9,10 +9,10 @@ import org.bukkit.inventory.meta.ItemMeta;
 /**
  * 아이콘 아이템을 만든다.
  *
- * <p>[확인 필요 - 지시서 16장]
- * {@code ItemMeta#setDisplayName(String)} 과 {@code setLore(List)} 가
- * 26.x 에서 유효한지 확인한다. 아이템 표시 이름을 다루는 곳은
- * 이 클래스뿐이다.
+ * <p>[확인 완료] {@code ItemMeta#setDisplayName(String)} 과
+ * {@code setLore(List)} 는 26.1.2 에 있다. 각각 {@code displayName(Component)}
+ * 와 {@code lore(List)} 로 대체하라는 사용 중단 표시가 붙어 있고,
+ * 제거 예정 표시는 없다. Paper 26.1.2 API 소스로 컴파일해 확인했다. (tools/verify-against-paper.sh)
  */
 public final class Icons {
 

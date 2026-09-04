@@ -14,11 +14,10 @@ import org.bukkit.command.CommandSender;
  * <p>치환자는 {@code {이름}} 형식이며, {@code format("a.b", "level", 3)}
  * 처럼 키와 값을 번갈아 넘긴다.
  *
- * <p>[확인 필요 - 지시서 16장]
- * 메시지를 실제로 보내는 API 는 이 클래스 한 곳에만 있다.
- * 26.x 에서 {@code CommandSender#sendMessage(String)} 가 유효한지,
- * 색 코드나 컴포넌트를 어떻게 처리해야 하는지 확인한 뒤
- * 이 파일만 고치면 된다. 확인 전까지 색 코드는 쓰지 않는다.
+ * <p>[확인 완료] {@code CommandSender#sendMessage(String)} 는 26.1.2 에
+ * 있고 사용 중단이 아니다. Paper 26.1.2 API 소스로 컴파일해 확인했다. (tools/verify-against-paper.sh)
+ * 색 코드 처리는 아직 붙이지 않았다. 문구에 색 코드를 쓰지 않는다.
+ * 메시지를 보내는 API 는 이 클래스 한 곳에만 있다.
  */
 public final class Messages {
 

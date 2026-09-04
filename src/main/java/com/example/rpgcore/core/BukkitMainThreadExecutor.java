@@ -7,10 +7,9 @@ import org.bukkit.scheduler.BukkitTask;
 /**
  * {@link MainThreadExecutor} 의 Bukkit 스케줄러 구현.
  *
- * <p>[확인 필요 - 지시서 16장]
- * 26.x 에서 Bukkit 스케줄러 API가 그대로인지 확인한 뒤 확정한다.
- * 이 파일은 플러그인 전체에서 스케줄러를 호출하는 유일한 지점이므로,
- * API가 다르다면 여기만 고치면 된다.
+ * <p>[확인 완료] BukkitScheduler 의 runTask · runTaskTimer 는 26.1.2 에
+ * 그대로 있고 사용 중단도 아니다. Paper 26.1.2 API 소스로 컴파일해 확인했다. (tools/verify-against-paper.sh)
+ * 이 파일은 플러그인 전체에서 스케줄러를 호출하는 유일한 지점이다.
  */
 public final class BukkitMainThreadExecutor implements MainThreadExecutor {
 

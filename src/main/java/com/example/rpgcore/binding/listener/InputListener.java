@@ -9,6 +9,7 @@ import com.example.rpgcore.player.RpgPlayer;
 import com.example.rpgcore.skill.SkillService;
 import com.example.rpgcore.util.Messages;
 import java.util.Locale;
+import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.EventHandler;
@@ -33,13 +34,12 @@ import org.bukkit.inventory.EquipmentSlot;
  * 유지 상태(웅크림·달리기)가 성립한 상태에서만 스킬 발동으로 해석하고,
  * 그때 해당 이벤트를 취소한다. 유지 상태가 없으면 아무 것도 하지 않는다.
  *
- * <p>[확인 필요 - 지시서 16장 4번]
- * 점프는 Paper 전용 이벤트 존재 여부가 확인되지 않아 빠져 있다.
- * 확인되면 여기에 핸들러를 더하고 조합 수가 12에서 14로 늘어난다.
+ * <p>[지시서 16장 4번 확인 완료]
+ * Paper 26.1.2 의 PlayerJumpEvent 를 쓴다. 조합 수는 14다.
  *
- * <p>[확인 필요 - 지시서 16장 5번]
- * 좌클릭 허공 감지는 버전마다 이벤트 동작이 다를 수 있다.
- * 실제 구동으로 확인한 뒤 확정한다.
+ * <p>[지시서 16장 5번 일부 확인]
+ * Action.LEFT_CLICK_AIR 상수는 있다. 허공 좌클릭이 실제로 매번
+ * 서버까지 오는지는 구동해 봐야 안다.
  */
 public final class InputListener implements Listener {
 
@@ -148,6 +148,14 @@ public final class InputListener implements Listener {
         RpgPlayer rpgPlayer = players.get(player);
         if (rpgPlayer != null) {
             handle(rpgPlayer, InputTrigger.OPEN_INVENTORY, event);
+        }
+    }
+
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onJump(PlayerJumpEvent event) {
+        RpgPlayer rpgPlayer = players.get(event.getPlayer());
+        if (rpgPlayer != null) {
+            handle(rpgPlayer, InputTrigger.JUMP, event);
         }
     }
 
