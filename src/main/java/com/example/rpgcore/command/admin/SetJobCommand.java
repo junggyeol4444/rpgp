@@ -8,6 +8,7 @@ import com.example.rpgcore.player.RpgPlayer;
 import com.example.rpgcore.util.CommandUtil;
 import com.example.rpgcore.util.Messages;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import org.bukkit.command.CommandSender;
@@ -16,13 +17,13 @@ import org.bukkit.entity.Player;
 /**
  * /rpg admin setjob &lt;player&gt; base &lt;jobId&gt; — 직업 강제 지정.
  *
- * <p>지시서 12장은 base/tier1/tier2 를 받는다.
- * 2차 전직은 9단계라 지금은 base 와 tier1 까지 처리한다.
+ * <p>지시서 12장대로 base/tier1/tier2 를 모두 받는다.
  */
 public final class SetJobCommand implements AdminSubCommand {
 
     private static final String TIER_BASE = "base";
     private static final String TIER_1 = "tier1";
+    private static final String TIER_2 = "tier2";
 
     private final PlayerManager players;
     private final JobService jobs;
@@ -46,7 +47,7 @@ public final class SetJobCommand implements AdminSubCommand {
 
     @Override
     public String argHint() {
-        return "<player> <base|tier1> <id>";
+        return "<player> <base|tier1|tier2> <id>";
     }
 
     @Override
@@ -66,6 +67,8 @@ public final class SetJobCommand implements AdminSubCommand {
             result = jobs.forceSetBase(rpgPlayer, args[2]);
         } else if (TIER_1.equalsIgnoreCase(args[1])) {
             result = jobs.forceSetTier1(rpgPlayer, args[2]);
+        } else if (TIER_2.equalsIgnoreCase(args[1])) {
+            result = jobs.forceSetTier2(rpgPlayer, args[2]);
         } else {
             messages.send(sender, "admin.setjob.tier-not-supported", "tier", args[1]);
             return;
@@ -86,7 +89,7 @@ public final class SetJobCommand implements AdminSubCommand {
             return players.onlinePlayers().stream().map(p -> p.player().getName()).toList();
         }
         if (args.length == 2) {
-            return List.of(TIER_BASE, TIER_1);
+            return List.of(TIER_BASE, TIER_1, TIER_2);
         }
         if (args.length == 3) {
             String prefix = args[2].toLowerCase(Locale.ROOT);
@@ -97,12 +100,15 @@ public final class SetJobCommand implements AdminSubCommand {
                         ids.add(job.id());
                     }
                 }
-            } else if (TIER_1.equalsIgnoreCase(args[1])) {
-                // 대상 플레이어의 기본 직업에 달린 분기만 보여준다.
+            } else {
+                // 대상 플레이어가 지금 고를 수 있는 분기만 보여준다.
                 Player target = CommandUtil.onlinePlayer(args[0]);
                 RpgPlayer rpgPlayer = target == null ? null : players.get(target);
                 if (rpgPlayer != null) {
-                    for (JobBranch branch : jobs.tier1Choices(rpgPlayer.data())) {
+                    Collection<JobBranch> choices = TIER_1.equalsIgnoreCase(args[1])
+                            ? jobs.tier1Choices(rpgPlayer.data())
+                            : jobs.tier2Choices(rpgPlayer.data());
+                    for (JobBranch branch : choices) {
                         if (branch.id().toLowerCase(Locale.ROOT).startsWith(prefix)) {
                             ids.add(branch.id());
                         }

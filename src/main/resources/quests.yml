@@ -114,6 +114,24 @@ quests:
       skillPoints: 2
     repeatable: false
 
+  # 2차 전직 퀘스트. jobs.yml 의 tier2Quest 가 이 id 를 가리킨다.
+  job_advance_2:
+    display: "2차 전직 시험"
+    type: MAIN
+    requireLevel: 50
+    objectives:
+      - type: KILL
+        target: "ZOMBIE"
+        amount: 100
+      - type: COLLECT
+        item: "ROTTEN_FLESH"
+        amount: 50
+    rewards:
+      combatExp: 5000
+      skillPoints: 3
+      statPoints: 2
+    repeatable: false
+
   # 직업 조건이 붙은 예시. jobs.yml 의 id 와 같아야 한다.
   swordsman_trial:
     display: "검술 시험"

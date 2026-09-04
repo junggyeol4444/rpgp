@@ -224,7 +224,7 @@ gui:
     info:
       name: "직업"
       none: " 아직 고르지 않았습니다. ({level}레벨부터)"
-      tier1-level: " 1차 전직: {level}레벨 + 퀘스트 {quest}"
+      tier-level: " {tier}차 전직: {level}레벨 + 퀘스트 {quest}"
       current: " 현재: {job}"
     entry:
       name: "{job}"
@@ -246,6 +246,7 @@ gui:
       no-base-job: " 먼저 기본 직업을 골라야 합니다."
       quest-not-done: " 전직 퀘스트를 먼저 깨야 합니다."
       unknown-branch: "그런 분기가 없습니다."
+      no-tier1: " 먼저 1차 전직을 해야 합니다."
 
   # 4단계 추가 — 스킬트리 창 / 스킬 등록 창 (지시서 13장)
   skill:

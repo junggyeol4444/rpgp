@@ -770,13 +770,19 @@ public final class ConfigManager implements Reloadable {
                 parsed.remove(skillDefinition.id());
                 continue;
             }
-            if (skillDefinition.hasBranchRequirement()
-                    && jobs.tree().tier1(skillDefinition.jobId(),
-                            skillDefinition.requireBranch()) == null) {
-                report.error(label, "skills." + skillDefinition.id() + ".requireBranch",
-                        "jobs.yml 에 없는 1차 분기라 스킬을 끕니다: "
-                                + skillDefinition.requireBranch());
-                parsed.remove(skillDefinition.id());
+            if (skillDefinition.hasBranchRequirement()) {
+                String branch = skillDefinition.requireBranch();
+                boolean found = switch (skillDefinition.stage()) {
+                    case TIER1 -> jobs.tree().tier1(skillDefinition.jobId(), branch) != null;
+                    case TIER2 -> jobs.tree().findTier2(skillDefinition.jobId(), branch) != null;
+                    case BASE -> false;
+                };
+                if (!found) {
+                    report.error(label, "skills." + skillDefinition.id() + ".requireBranch",
+                            "jobs.yml 에 없는 " + skillDefinition.stage()
+                                    + " 분기라 스킬을 끕니다: " + branch);
+                    parsed.remove(skillDefinition.id());
+                }
             }
         }
     }

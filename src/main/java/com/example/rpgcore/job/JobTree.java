@@ -48,12 +48,31 @@ public final class JobTree {
         return base == null || tier1Id == null ? null : base.tier1().get(tier1Id);
     }
 
-    /**
-     * 2차 분기를 찾는다. 없으면 null.
-     * 9단계에서 쓴다.
-     */
+    /** 2차 분기를 찾는다. 없으면 null. */
     public JobBranch tier2(String baseId, String tier1Id, String tier2Id) {
         JobBranch tier1 = tier1(baseId, tier1Id);
         return tier1 == null || tier2Id == null ? null : tier1.child(tier2Id);
+    }
+
+    /**
+     * 1차 분기를 모르는 상태에서 2차 분기를 찾는다.
+     *
+     * <p>스킬 정의의 requireBranch 를 확인할 때 쓴다. 그 값이 어느 1차
+     * 분기 아래에 있는지까지는 설정에 적지 않기 때문이다.
+     *
+     * @return 없으면 null
+     */
+    public JobBranch findTier2(String baseId, String tier2Id) {
+        JobDefinition base = base(baseId);
+        if (base == null || tier2Id == null) {
+            return null;
+        }
+        for (JobBranch tier1 : base.tier1().values()) {
+            JobBranch found = tier1.child(tier2Id);
+            if (found != null) {
+                return found;
+            }
+        }
+        return null;
     }
 }

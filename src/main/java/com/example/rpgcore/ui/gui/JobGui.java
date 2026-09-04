@@ -10,6 +10,7 @@ import com.example.rpgcore.player.RpgPlayer;
 import com.example.rpgcore.player.data.PlayerData;
 import com.example.rpgcore.util.Messages;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -20,11 +21,10 @@ import org.bukkit.inventory.Inventory;
 /**
  * 지시서 13장 3) 직업 선택·전직 창.
  *
- * <p>기본 직업을 아직 안 골랐으면 7개 중 고르는 화면이,
- * 골랐으면 1차 전직 분기를 고르는 화면이 나온다.
- * (기획서 5장: 3레벨 기본 직업, 20레벨 1차 전직)
- *
- * <p>2차 전직은 9단계에서 이 클래스에 붙는다.
+ * <p>진행 단계에 따라 화면이 바뀐다.
+ * 기본 직업을 안 골랐으면 7개 중 고르는 화면, 골랐으면 1차 전직,
+ * 1차까지 했으면 2차 전직 화면이다.
+ * (기획서 5장: 3레벨 기본 직업, 20레벨 1차, 50레벨 2차)
  *
  * <p>고르면 되돌릴 수 없으므로 한 번 더 눌러야 확정된다.
  */
@@ -59,10 +59,14 @@ public final class JobGui extends Gui {
         slotToChoice.clear();
 
         PlayerData data = rpgPlayer.data();
-        if (data.job().hasBase()) {
-            renderTier1(inventory, data);
-        } else {
+        if (!data.job().hasBase()) {
             renderBaseJobs(inventory, data);
+        } else if (data.job().tier1() == null) {
+            renderBranches(inventory, data, jobs.canAdvanceTier1(data),
+                    jobs.tier1Choices(data), data.job().tier1());
+        } else {
+            renderBranches(inventory, data, jobs.canAdvanceTier2(data),
+                    jobs.tier2Choices(data), data.job().tier2());
         }
     }
 
@@ -103,17 +107,16 @@ public final class JobGui extends Gui {
     }
 
     // ------------------------------------------------------------
-    // 1차 전직 (8단계)
+    // 전직 (8 · 9단계)
     // ------------------------------------------------------------
 
-    private void renderTier1(Inventory inventory, PlayerData data) {
-        JobSettings settings = jobs.settings();
-        JobService.Result state = jobs.canAdvanceTier1(data);
-        renderInfo(inventory, data, settings, state);
+    /** 1차와 2차가 화면 모양이 같아서 한 메서드로 그린다. */
+    private void renderBranches(Inventory inventory, PlayerData data, JobService.Result state,
+                                Collection<JobBranch> choices, String current) {
+        renderInfo(inventory, data, jobs.settings(), state);
 
-        String current = data.job().tier1();
         int slot = BRANCH_START;
-        for (JobBranch branch : jobs.tier1Choices(data)) {
+        for (JobBranch branch : choices) {
             if (slot >= screen().size()) {
                 break;
             }
@@ -161,9 +164,14 @@ public final class JobGui extends Gui {
         lore.add(current == null
                 ? messages.format("gui.job.info.none", "level", settings.jobSelectLevel())
                 : messages.format("gui.job.info.current", "job", current));
-        if (data.job().hasBase()) {
-            lore.add(messages.format("gui.job.info.tier1-level",
-                    "level", settings.tier1Level(), "quest", settings.tier1Quest()));
+        if (data.job().hasBase() && data.job().tier1() == null) {
+            lore.add(messages.format("gui.job.info.tier-level",
+                    "tier", 1, "level", settings.tier1Level(),
+                    "quest", settings.tier1Quest()));
+        } else if (data.job().tier1() != null && data.job().tier2() == null) {
+            lore.add(messages.format("gui.job.info.tier-level",
+                    "tier", 2, "level", settings.tier2Level(),
+                    "quest", settings.tier2Quest()));
         }
         lore.add(messages.format("gui.job.state." + key(state)));
         inventory.setItem(icon.slot(), Icons.build(Icons.material(icon),
@@ -184,16 +192,22 @@ public final class JobGui extends Gui {
             return;
         }
 
+        boolean toTier1 = data.job().tier1() == null;
+        JobService.Result state = toTier1
+                ? jobs.canAdvanceTier1(data)
+                : jobs.canAdvanceTier2(data);
+
         // 전직은 되돌릴 수 없으므로 확인을 받는다. (지시서 13장)
-        if (jobs.canAdvanceTier1(data) == JobService.Result.OK
-                && !choice.equals(pendingBranch)) {
+        if (state == JobService.Result.OK && !choice.equals(pendingBranch)) {
             pendingBranch = choice;
             messages.send(rpgPlayer.player(), "gui.job.confirm-advance");
             render(rpgPlayer);
             return;
         }
         pendingBranch = null;
-        report(rpgPlayer, jobs.advanceTier1(rpgPlayer, choice), "gui.job.advanced");
+        report(rpgPlayer, toTier1
+                ? jobs.advanceTier1(rpgPlayer, choice)
+                : jobs.advanceTier2(rpgPlayer, choice), "gui.job.advanced");
         render(rpgPlayer);
     }
 
