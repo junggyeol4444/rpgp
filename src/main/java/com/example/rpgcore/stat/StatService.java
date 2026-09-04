@@ -7,6 +7,7 @@ import com.example.rpgcore.config.validation.ValidationReport;
 import com.example.rpgcore.core.Lifecycle;
 import com.example.rpgcore.core.Reloadable;
 import com.example.rpgcore.economy.CurrencyService;
+import com.example.rpgcore.job.JobBranch;
 import com.example.rpgcore.job.JobDefinition;
 import com.example.rpgcore.player.PlayerManager;
 import com.example.rpgcore.player.RpgPlayer;
@@ -102,9 +103,8 @@ public final class StatService implements Lifecycle, Reloadable {
         for (DerivedStat stat : DerivedStat.values()) {
             builder.set(stat, settings.base(stat));
         }
-        JobDefinition job = config.jobs().tree().base(data.job().base());
         for (Map.Entry<String, StatType> entry : settings.stats().entrySet()) {
-            int points = data.combat().stat(entry.getKey()) + jobBonus(job, entry.getKey(), data);
+            int points = data.combat().stat(entry.getKey()) + jobBonus(data, entry.getKey());
             if (points <= 0) {
                 continue;
             }
@@ -113,8 +113,8 @@ public final class StatService implements Lifecycle, Reloadable {
             }
         }
 
-        // TODO 4단계: 스킬·장비로 붙는 보정을 여기에 더한다.
-        // TODO 8·9단계: 1차·2차 전직 보정을 여기에 더한다.
+        // TODO 스킬·장비로 붙는 보정을 여기에 더한다.
+        // TODO 9단계: 2차 전직 보정을 여기에 더한다.
 
         return builder.build();
     }
@@ -124,6 +124,7 @@ public final class StatService implements Lifecycle, Reloadable {
      *
      * <p>기획서 5장 [직업간 차별화 축]: 레벨업 시 스탯 보정 차이.
      * jobs.yml 의 statBonusPerLevel 을 전투 레벨만큼 곱한다.
+     * 1차 전직을 했으면 그 분기 보정이 기본 직업 보정에 더해진다.
      *
      * <p>[확인 필요 — 밸런스]
      * 기준을 "전투 레벨 전체"로 잡았다. 직업은 3레벨에 고르므로
@@ -136,15 +137,21 @@ public final class StatService implements Lifecycle, Reloadable {
      * 스킬의 statScaling 이 이 값을 쓴다.
      */
     public int abilityPoints(PlayerData data, String statId) {
-        JobDefinition job = config.jobs().tree().base(data.job().base());
-        return data.combat().stat(statId) + jobBonus(job, statId, data);
+        return data.combat().stat(statId) + jobBonus(data, statId);
     }
 
-    private int jobBonus(JobDefinition job, String statId, PlayerData data) {
-        if (job == null) {
+    private int jobBonus(PlayerData data, String statId) {
+        JobDefinition base = config.jobs().tree().base(data.job().base());
+        if (base == null) {
             return 0;
         }
-        int perLevel = job.statBonusPerLevel(statId);
+        int perLevel = base.statBonusPerLevel(statId);
+
+        // 1차 전직을 했으면 그 분기 보정이 기본 직업 보정에 더해진다. (8단계)
+        JobBranch tier1 = config.jobs().tree().tier1(data.job().base(), data.job().tier1());
+        if (tier1 != null) {
+            perLevel += tier1.statBonusPerLevel(statId);
+        }
         return perLevel <= 0 ? 0 : perLevel * data.combat().level();
     }
 

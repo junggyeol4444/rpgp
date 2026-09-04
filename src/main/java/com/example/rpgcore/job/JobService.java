@@ -8,11 +8,14 @@ import com.example.rpgcore.player.data.PlayerData;
 import com.example.rpgcore.stat.StatService;
 import com.example.rpgcore.storage.dirty.SavePriority;
 import com.example.rpgcore.storage.dirty.SaveScheduler;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * 지시서 3장 [job/JobService] — 직업 선택·전직 처리.
  *
- * <p>3단계 범위는 기본 직업 선택까지다. 1차·2차 전직은 8·9단계다.
+ * <p>기본 직업 선택(3단계)과 1차 전직(8단계)을 처리한다.
+ * 2차 전직은 9단계다.
  *
  * <p>기본 직업 선택은 되돌릴 수 없으므로 즉시 저장한다.
  * (지시서 5장 [저장 정책] / 기획서 9장)
@@ -32,7 +35,13 @@ public final class JobService implements Lifecycle {
         /** 레벨이 모자람 */
         LEVEL_TOO_LOW,
         /** 이미 골랐고 되돌릴 수 없음 */
-        ALREADY_SELECTED
+        ALREADY_SELECTED,
+        /** 기본 직업을 아직 안 골랐음 */
+        NO_BASE_JOB,
+        /** 전직 퀘스트를 아직 안 깼음 */
+        QUEST_NOT_DONE,
+        /** 그런 분기가 없음 */
+        UNKNOWN_BRANCH
     }
 
     private final ConfigManager config;
@@ -112,9 +121,82 @@ public final class JobService implements Lifecycle {
         stats.refresh(rpgPlayer);
     }
 
+    // ------------------------------------------------------------
+    // 1차 전직 (8단계)
+    // ------------------------------------------------------------
+
+    /**
+     * 1차 전직을 할 수 있는지.
+     *
+     * <p>기획서 5장 [시점]: 20레벨 + 전직 퀘스트 클리어.
+     */
+    public Result canAdvanceTier1(PlayerData data) {
+        JobSettings settings = config.jobs();
+        if (!data.job().hasBase()) {
+            return Result.NO_BASE_JOB;
+        }
+        if (data.job().tier1() != null && !settings.branchRevert()) {
+            return Result.ALREADY_SELECTED;
+        }
+        if (data.combat().level() < settings.tier1Level()) {
+            return Result.LEVEL_TOO_LOW;
+        }
+        String quest = settings.tier1Quest();
+        if (quest != null && !quest.isEmpty() && !data.quest().completed().contains(quest)) {
+            return Result.QUEST_NOT_DONE;
+        }
+        return Result.OK;
+    }
+
+    /** 지금 고를 수 있는 1차 분기. 기본 직업이 없으면 빈 목록. */
+    public Collection<JobBranch> tier1Choices(PlayerData data) {
+        JobDefinition base = tree().base(data.job().base());
+        return base == null ? List.of() : base.tier1().values();
+    }
+
+    /** 1차 전직을 한다. */
+    public Result advanceTier1(RpgPlayer rpgPlayer, String branchId) {
+        PlayerData data = rpgPlayer.data();
+        Result check = canAdvanceTier1(data);
+        if (check != Result.OK) {
+            return check;
+        }
+        if (tree().tier1(data.job().base(), branchId) == null) {
+            return Result.UNKNOWN_BRANCH;
+        }
+        data.job().tier1(branchId);
+        saves.markDirty(data, SavePriority.IMMEDIATE);
+        stats.refresh(rpgPlayer);
+        return Result.OK;
+    }
+
+    /** 관리자용 1차 분기 강제 지정. 레벨과 퀘스트를 무시한다. */
+    public Result forceSetTier1(RpgPlayer rpgPlayer, String branchId) {
+        PlayerData data = rpgPlayer.data();
+        if (!data.job().hasBase()) {
+            return Result.NO_BASE_JOB;
+        }
+        if (tree().tier1(data.job().base(), branchId) == null) {
+            return Result.UNKNOWN_BRANCH;
+        }
+        data.job().tier1(branchId);
+        saves.markDirty(data, SavePriority.IMMEDIATE);
+        stats.refresh(rpgPlayer);
+        return Result.OK;
+    }
+
+    /** 지금 1차 분기. 없으면 null. */
+    public JobBranch tier1Of(PlayerData data) {
+        return tree().tier1(data.job().base(), data.job().tier1());
+    }
+
     /** 표시용 이름. 직업이 없으면 null. */
     public String displayName(PlayerData data) {
         JobDefinition base = tree().base(data.job().base());
-        return base == null ? null : base.display();
+        if (base == null) {
+            return null;
+        }
+        JobBranch tier1 = tier1Of(data);
+        return tier1 == null ? base.display() : base.display() + " / " + tier1.display();
     }
 }

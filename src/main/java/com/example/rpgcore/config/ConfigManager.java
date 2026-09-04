@@ -583,7 +583,10 @@ public final class ConfigManager implements Reloadable {
                     ? Map.of()
                     : readBranches(one.getConfigurationSection(childKey), null,
                             file, path + "." + id + "." + childKey, report);
-            result.put(id, new JobBranch(id, one.getString("display", id), children));
+            result.put(id, new JobBranch(id, one.getString("display", id),
+                    readStatBonus(one.getConfigurationSection("statBonusPerLevel"),
+                            file, path + "." + id + ".statBonusPerLevel", report),
+                    children));
         }
         return result;
     }
@@ -703,6 +706,7 @@ public final class ConfigManager implements Reloadable {
                 section.getString("display", id),
                 jobId,
                 stage,
+                section.getString("requireBranch", null),
                 section.getString("tree.parent", null),
                 section.getString("tree.branch", null),
                 Math.max(0, section.getDouble("cost.mana", 0.0)),
@@ -763,6 +767,15 @@ public final class ConfigManager implements Reloadable {
             if (skillDefinition.hasParent() && !parsed.containsKey(skillDefinition.parentId())) {
                 report.error(label, "skills." + skillDefinition.id() + ".tree.parent",
                         "선행 스킬이 없어 스킬을 끕니다: " + skillDefinition.parentId());
+                parsed.remove(skillDefinition.id());
+                continue;
+            }
+            if (skillDefinition.hasBranchRequirement()
+                    && jobs.tree().tier1(skillDefinition.jobId(),
+                            skillDefinition.requireBranch()) == null) {
+                report.error(label, "skills." + skillDefinition.id() + ".requireBranch",
+                        "jobs.yml 에 없는 1차 분기라 스킬을 끕니다: "
+                                + skillDefinition.requireBranch());
                 parsed.remove(skillDefinition.id());
             }
         }

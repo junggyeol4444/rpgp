@@ -97,6 +97,23 @@ quests:
         dungeon_coin: 20
     repeatable: false
 
+  # 1차 전직 퀘스트. jobs.yml 의 tier1Quest 가 이 id 를 가리킨다.
+  # 이 퀘스트를 깨야 20레벨에서 1차 전직을 할 수 있다.
+  job_advance_1:
+    display: "1차 전직 시험"
+    type: MAIN
+    requireLevel: 20
+    objectives:
+      - type: KILL
+        target: "ZOMBIE"
+        amount: 30
+      - type: REACH
+        region: "start_field"
+    rewards:
+      combatExp: 1000
+      skillPoints: 2
+    repeatable: false
+
   # 직업 조건이 붙은 예시. jobs.yml 의 id 와 같아야 한다.
   swordsman_trial:
     display: "검술 시험"

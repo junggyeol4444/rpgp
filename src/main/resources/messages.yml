@@ -138,7 +138,7 @@ admin:
     done: "{player}의 스탯을 초기화했습니다. (비용 없음)"
   setjob:
     done: "{player}의 직업을 {job}(으)로 지정했습니다."
-    unknown-job: "jobs.yml 에 없는 직업입니다: {job}"
+    failed: "지정하지 못했습니다: {id} ({reason})"
     tier-not-supported: "지금은 base 만 지정할 수 있습니다. 1차·2차 전직은 8·9단계입니다: {tier}"
   jobreset:
     done: "{player}의 전직 상태를 초기화했습니다."
@@ -224,6 +224,7 @@ gui:
     info:
       name: "직업"
       none: " 아직 고르지 않았습니다. ({level}레벨부터)"
+      tier1-level: " 1차 전직: {level}레벨 + 퀘스트 {quest}"
       current: " 현재: {job}"
     entry:
       name: "{job}"
@@ -231,14 +232,20 @@ gui:
       role: " 역할: {role}"
       bonus: " 레벨당 {stat} +{value}"
       selected: " 지금 이 직업입니다."
+      confirm: " 한 번 더 눌러야 확정됩니다."
       click: " 눌러서 고르기 (되돌릴 수 없음)"
     selected: "직업을 {job}(으)로 정했습니다."
+    advanced: "전직했습니다: {job}"
+    confirm-advance: "전직은 되돌릴 수 없습니다. 한 번 더 누르세요."
     state:
       ok: " 고를 수 있습니다."
       no-jobs: "jobs.yml 에 직업 정의가 없습니다."
       unknown-job: "그런 직업이 없습니다."
       level-too-low: " 레벨이 모자랍니다."
       already-selected: " 이미 골랐고 되돌릴 수 없습니다."
+      no-base-job: " 먼저 기본 직업을 골라야 합니다."
+      quest-not-done: " 전직 퀘스트를 먼저 깨야 합니다."
+      unknown-branch: "그런 분기가 없습니다."
 
   # 4단계 추가 — 스킬트리 창 / 스킬 등록 창 (지시서 13장)
   skill:
@@ -259,6 +266,7 @@ gui:
       unknown-skill: "그런 스킬이 없습니다."
       wrong-job: " 다른 직업의 스킬입니다."
       stage-locked: " 전직 단계가 모자랍니다."
+      wrong-branch: " 다른 전직 분기의 스킬입니다."
       parent-locked: " 선행 스킬이 필요합니다."
       branch-locked: " 같은 분기에서 다른 쪽을 골랐습니다."
       already-unlocked: " 해금함"
@@ -338,6 +346,7 @@ skill:
     unknown-skill: "그런 스킬이 없습니다."
     wrong-job: "다른 직업의 스킬입니다."
     stage-locked: "전직 단계가 모자랍니다."
+    wrong-branch: "다른 전직 분기의 스킬입니다."
     parent-locked: "선행 스킬을 먼저 해금하세요."
     branch-locked: "같은 분기에서 다른 쪽을 이미 골랐습니다."
     already-unlocked: "이미 해금했습니다."

@@ -10,6 +10,8 @@ tier1Quest: "job_advance_1"   # 전직 퀘스트 id
 tier2Quest: "job_advance_2"
 branchRevert: false           # 분기 되돌리기 불가
 
+# 1차 분기에도 statBonusPerLevel 을 둘 수 있다. 기본 직업 보정에 더해진다.
+# 밸런스가 정해지지 않아 지금은 비워 둔다. (8단계)
 jobs:
   swordsman:
     display: "근접 검"

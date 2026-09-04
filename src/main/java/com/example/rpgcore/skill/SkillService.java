@@ -38,6 +38,8 @@ public final class SkillService implements Lifecycle {
         WRONG_JOB,
         /** 전직 단계가 모자람 */
         STAGE_LOCKED,
+        /** 다른 전직 분기의 스킬 */
+        WRONG_BRANCH,
         /** 선행 스킬을 아직 해금하지 않음 */
         PARENT_LOCKED,
         /** 같은 분기에서 다른 쪽을 이미 골라 영구 잠금 */
@@ -116,6 +118,9 @@ public final class SkillService implements Lifecycle {
         if (data.job().stage() < skill.stage().requiredJobStage()) {
             return Result.STAGE_LOCKED;
         }
+        if (skill.hasBranchRequirement() && !skill.requireBranch().equals(branchOf(data, skill))) {
+            return Result.WRONG_BRANCH;
+        }
         if (skill.hasParent() && !data.skill().unlocked().contains(skill.parentId())) {
             return Result.PARENT_LOCKED;
         }
@@ -129,6 +134,15 @@ public final class SkillService implements Lifecycle {
             return Result.NOT_ENOUGH_POINTS;
         }
         return Result.OK;
+    }
+
+    /** 이 스킬의 단계에 해당하는 플레이어의 분기 id. 없으면 null. */
+    private static String branchOf(PlayerData data, SkillDefinition skill) {
+        return switch (skill.stage()) {
+            case TIER1 -> data.job().tier1();
+            case TIER2 -> data.job().tier2();
+            case BASE -> null;
+        };
     }
 
     /**

@@ -36,6 +36,8 @@ screens:
       berserker: { slot: 14, material: IRON_AXE }
       tamer:     { slot: 15, material: BONE }
       trapper:   { slot: 16, material: TRIPWIRE_HOOK }
+      # 1차 전직 화면에서 분기 칸에 쓰는 아이템. slot 값은 무시된다.
+      branch:    { slot: 0,  material: ENCHANTED_BOOK }
 
   # 스킬트리 화면은 스킬이 직업당 6~8개라 자리를 하나씩 적지 않는다.
   # unlocked / available / locked 는 상태별 아이템 종류를 정하는 데만 쓰이고

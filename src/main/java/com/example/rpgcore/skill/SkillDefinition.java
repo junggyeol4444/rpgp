@@ -11,6 +11,9 @@ import java.util.Map;
  * @param display                  표시 이름
  * @param jobId                    소속 직업 id
  * @param stage                    해금에 필요한 직업 단계
+ * @param requireBranch            필요한 전직 분기 id. 없으면 null.
+ *                                 stage 가 TIER1 이면 1차 분기, TIER2 면
+ *                                 2차 분기를 가리킨다
  * @param parentId                 선행 스킬 id. 없으면 null
  * @param branchGroup              분기 그룹 id. 같은 그룹은 택일이다.
  *                                 없으면 null
@@ -27,6 +30,7 @@ public record SkillDefinition(String id,
                               String display,
                               String jobId,
                               SkillStage stage,
+                              String requireBranch,
                               String parentId,
                               String branchGroup,
                               double manaCost,
@@ -71,5 +75,10 @@ public record SkillDefinition(String id,
     /** 선행 스킬이 있는지. */
     public boolean hasParent() {
         return parentId != null;
+    }
+
+    /** 특정 전직 분기에서만 열리는 스킬인지. */
+    public boolean hasBranchRequirement() {
+        return requireBranch != null;
     }
 }
