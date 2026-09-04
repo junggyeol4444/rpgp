@@ -100,6 +100,7 @@ permissions:
       rpgcore.admin.quest: true
       rpgcore.admin.questreset: true
       rpgcore.admin.questcycle: true
+      rpgcore.admin.questedit: true
       rpgcore.admin.currency: true
       rpgcore.admin.life: true
   rpgcore.admin.reload:
@@ -138,6 +139,9 @@ permissions:
     default: op
   rpgcore.admin.questcycle:
     default: op
+  rpgcore.admin.questedit:
+    default: op
+    description: "퀘스트 GUI 에디터를 연다. quests/editor.yml 을 고친다"
   rpgcore.admin.currency:
     default: op
   rpgcore.admin.life:

@@ -3,7 +3,10 @@
  *
  * <p>지시서 3장 [npc/citizens] 의 자리다.
  *
- * <p>구현 단계: 5단계 (지시서 16장 6번 검증 필요).
- * 지시서 14장에 따라 해당 단계에 들어가기 전에는 여기에 코드를 두지 않는다.
+ * <p>아직 비어 있다. 지시서 16장 6번(Citizens 의 26.x 지원)은
+ * {@code tools/verify-against-paper.sh} 로 확인했고, Citizens2 저장소에
+ * {@code v26_1_R1} · {@code v26_2_R1} NMS 모듈이 있다. 다만 연동 코드는
+ * 실제 서버에서 이벤트 흐름을 확인해야 쓸 수 있어서 넣지 않았다.
+ * 그때까지는 {@link com.example.rpgcore.npc.NoNpcBridge} 를 쓴다.
  */
 package com.example.rpgcore.npc.citizens;

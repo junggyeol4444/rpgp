@@ -976,6 +976,16 @@ public final class ConfigManager implements Reloadable {
     }
 
     /**
+     * 퀘스트 정의만 다시 읽는다.
+     *
+     * <p>GUI 에디터가 파일을 쓴 뒤 즉시 반영할 때 쓴다. (10단계)
+     * 디스크에 닿으므로 IO 스레드에서 부른다.
+     */
+    public synchronized void reloadQuests(ValidationReport report) {
+        loadQuests(report);
+    }
+
+    /**
      * 지시서 6장: quests 도 디렉터리 스캔을 지원한다.
      * quests.yml 을 먼저 읽고 quests/ 디렉터리의 .yml 을 이름 순으로 덧붙인다.
      */

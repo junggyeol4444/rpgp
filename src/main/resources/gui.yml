@@ -7,11 +7,9 @@
 # material 은 마인크래프트 아이템 이름이다. 알 수 없는 이름이면
 # 그 자리만 STONE 으로 대체하고 콘솔에 남긴다.
 #
-# 나머지 화면은 해당 단계에서 채운다.
 #   job 화면 : 직업 id (jobs.yml 과 같은 이름) + info
-#
-# 나머지 화면은 해당 단계에서 채운다.
 #   skill · bind : 4단계 / quest : 5단계
+#   questeditor · questedit : 10단계
 screens:
   stat:
     title: "스탯 분배"
@@ -72,3 +70,32 @@ screens:
       active:    { slot: 1, material: WRITABLE_BOOK }
       completed: { slot: 2, material: ENCHANTED_BOOK }
       entry:     { slot: 0, material: PAPER }
+
+  # 10단계 — 퀘스트 GUI 에디터의 목록 화면.
+  # new 만 slot 을 쓰고, entry 는 아이템 종류만 쓴다.
+  # 퀘스트는 9번 칸부터 순서대로 채워진다.
+  questeditor:
+    title: "퀘스트 편집"
+    rows: 6
+    icons:
+      new:   { slot: 4, material: WRITABLE_BOOK }
+      entry: { slot: 0, material: PAPER }
+
+  # 10단계 — 퀘스트 하나를 편집하는 화면.
+  # 첫 두 줄이 항목 칸이고, 목표는 18번 칸부터 순서대로 채워진다.
+  # objective 는 아이템 종류만 쓰이고 slot 값은 무시된다.
+  questedit:
+    title: "퀘스트 항목"
+    rows: 6
+    icons:
+      display:      { slot: 0,  material: NAME_TAG }
+      type:         { slot: 1,  material: BOOK }
+      level:        { slot: 2,  material: EXPERIENCE_BOTTLE }
+      job:          { slot: 3,  material: IRON_SWORD }
+      repeat:       { slot: 4,  material: CLOCK }
+      exp:          { slot: 5,  material: GLOWSTONE_DUST }
+      skillpoint:   { slot: 6,  material: ENCHANTED_BOOK }
+      statpoint:    { slot: 7,  material: NETHER_STAR }
+      addobjective: { slot: 9,  material: LIME_DYE }
+      save:         { slot: 17, material: EMERALD_BLOCK }
+      objective:    { slot: 0,  material: TARGET }

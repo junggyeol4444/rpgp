@@ -19,6 +19,7 @@ import com.example.rpgcore.command.admin.SaveCommand;
 import com.example.rpgcore.command.admin.BindResetCommand;
 import com.example.rpgcore.command.admin.CurrencyCommand;
 import com.example.rpgcore.command.admin.QuestAdminCommand;
+import com.example.rpgcore.command.admin.QuestEditCommand;
 import com.example.rpgcore.command.admin.QuestCycleCommand;
 import com.example.rpgcore.command.admin.QuestResetCommand;
 import com.example.rpgcore.command.admin.SetJobCommand;
@@ -51,6 +52,9 @@ import com.example.rpgcore.economy.EconomyBridgeFactory;
 import com.example.rpgcore.npc.NoNpcBridge;
 import com.example.rpgcore.npc.NpcBridge;
 import com.example.rpgcore.quest.QuestService;
+import com.example.rpgcore.quest.editor.ChatPromptListener;
+import com.example.rpgcore.quest.editor.QuestEditorService;
+import com.example.rpgcore.quest.editor.QuestWriter;
 import com.example.rpgcore.quest.objective.ObjectiveListener;
 import com.example.rpgcore.quest.objective.ObjectiveTracker;
 import com.example.rpgcore.quest.reward.RewardService;
@@ -167,6 +171,9 @@ public final class RpgCorePlugin extends JavaPlugin {
         QuestService quests = registry.register(QuestService.class,
                 new QuestService(config, saves, rewards, messages));
         ObjectiveTracker objectives = new ObjectiveTracker(quests);
+        QuestWriter questWriter = new QuestWriter(getDataFolder());
+        QuestEditorService questEditor = registry.register(QuestEditorService.class,
+                new QuestEditorService(config, saves, questWriter, messages, getLogger()));
         // 지시서 16장 6번이 확인될 때까지 NPC 연동은 비어 있는 구현을 쓴다.
         NpcBridge npcs = new NoNpcBridge();
 
@@ -199,6 +206,8 @@ public final class RpgCorePlugin extends JavaPlugin {
             guis.forget(rpgPlayer);
             rpgPlayer.inputState().clear();
             cooldowns.clear(rpgPlayer);
+            questEditor.clearDraft(rpgPlayer);
+            questEditor.clearPrompt(rpgPlayer.uuid());
         });
 
         registry.enableAll();
@@ -213,16 +222,19 @@ public final class RpgCorePlugin extends JavaPlugin {
                 new ObjectiveListener(players, objectives, regions, npcs), this);
         getServer().getPluginManager().registerEvents(
                 new LifeListener(players, lifeTracks), this);
+        getServer().getPluginManager().registerEvents(
+                new ChatPromptListener(players, questEditor), this);
 
         if (!registerCommands(config, repository, saves, levels, players, stats, jobs,
-                skills, bindings, quests, currencies, economy, lifeTracks, guis, messages)) {
+                skills, bindings, quests, questEditor, currencies, economy, lifeTracks,
+                guis, messages)) {
             getLogger().severe("명령어를 등록하지 못했습니다. plugin.yml 의 commands 항목을 확인하세요.");
         }
 
         // 서버가 돌아가는 중에 켜졌다면 이미 접속해 있는 플레이어가 있다.
         players.loadOnlinePlayers();
 
-        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~7단계)");
+        getLogger().info(PluginIds.PLUGIN_NAME + " " + version() + " 활성화 (1~10단계)");
     }
 
     @Override
@@ -247,6 +259,7 @@ public final class RpgCorePlugin extends JavaPlugin {
                                      SkillService skills,
                                      BindingService bindings,
                                      QuestService quests,
+                                     QuestEditorService questEditor,
                                      CurrencyService currencies,
                                      EconomyBridge economy,
                                      LifeTrackService lifeTracks,
@@ -269,6 +282,8 @@ public final class RpgCorePlugin extends JavaPlugin {
                 .register(new QuestAdminCommand(players, quests, messages))
                 .register(new QuestResetCommand(players, quests, messages))
                 .register(new QuestCycleCommand(players, quests, messages))
+                .register(new QuestEditCommand(config, players, quests, questEditor,
+                        guis, messages))
                 .register(new CurrencyCommand(players, currencies, messages))
                 .register(new LifeAdminCommand(players, lifeTracks, messages))
                 .register(new DataDumpCommand(players, messages))

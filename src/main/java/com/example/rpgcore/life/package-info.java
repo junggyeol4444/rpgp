@@ -1,9 +1,10 @@
 /**
  * 생활 계열 경험치 4트랙 (생활 · 채광 · 제작 · 연금).
  *
- * <p>지시서 3장 [LifeTrackService / TrackType / unlock] 의 자리다.
+ * <p>지시서 3장 [LifeTrackService / TrackType / unlock].
  *
- * <p>구현 단계: 7단계.
- * 지시서 14장에 따라 해당 단계에 들어가기 전에는 여기에 코드를 두지 않는다.
+ * <p>구현 단계: 7단계. 들어와 있다.
+ * 트랙 정의와 해금은 {@code life.yml}, 경험치 곡선은 {@code levels.yml} 의
+ * {@code life.curve} 에서 읽는다.
  */
 package com.example.rpgcore.life;

@@ -94,6 +94,8 @@ command:
       desc: "퀘스트 진행 이력 초기화"
     questcycle:
       desc: "일일·주간 퀘스트 리셋"
+    questedit:
+      desc: "퀘스트 GUI 에디터 열기"
     currency:
       desc: "특수 재화 지급·차감"
     life:
@@ -320,6 +322,46 @@ gui:
         active: " 좌클릭 완료 / 우클릭 포기"
         completed: " 완료함"
 
+  # 10단계 추가 — 퀘스트 GUI 에디터 (지시서 14장)
+  editor:
+    none: "없음"
+    value: " 지금 값: {value}"
+    new:
+      name: "새 퀘스트 만들기"
+      hint: " 눌러서 채팅으로 id 입력"
+    entry:
+      name: "{quest}"
+      id: " id: {id}"
+      type: " 종류: {type}"
+      objectives: " 목표: {count}개"
+      hint: " 좌클릭 편집 / 우클릭 삭제 (quests/editor.yml 에서만 지웁니다)"
+      hint-edit-only: " 좌클릭 편집"
+      copied: " quests.yml 에 손으로 적은 퀘스트입니다."
+      copied2: " 저장하면 quests/editor.yml 에 복사본이 생기고 그쪽이 우선합니다."
+    field:
+      display: "표시 이름 ({id})"
+      type: "퀘스트 종류"
+      level: "필요 레벨"
+      job: "필요 직업"
+      repeat: "반복 가능"
+      exp: "보상 경험치"
+      skillpoint: "보상 스킬 포인트"
+      statpoint: "보상 스탯 포인트"
+      add: "목표 추가"
+      save: "저장"
+    hint:
+      chat: " 눌러서 채팅으로 입력"
+      cycle: " 눌러서 다음 값"
+      toggle: " 눌러서 켜고 끄기"
+      number: " 좌클릭 +1 / 우클릭 -1 / 시프트 {shift}배"
+      add: " 눌러서 목표 한 줄 추가"
+      save: " 눌러서 파일에 저장"
+      no-objective: " 목표가 하나도 없어 저장할 수 없습니다."
+    objective:
+      name: "{index}. {type}"
+      target: " 대상 {key} x{amount}"
+      hint: " 좌클릭 종류 / 시프트 좌클릭 대상 / 우클릭 삭제"
+
 # 4단계 추가 — 유지 상태와 순간 입력 이름 (지시서 10장)
 hold:
   sneak: "웅크림"
@@ -389,3 +431,23 @@ objective:
 life:
   level-up: "{track} 레벨 업! {before} -> {after}"
   unlocked: "해금: {id}"
+
+# 10단계 추가 — 퀘스트 GUI 에디터 (지시서 14장)
+editor:
+  prompt:
+    id: "새 퀘스트 id 를 채팅으로 입력하세요. (소문자·숫자·밑줄, 40자 이내)"
+    display: "표시 이름을 채팅으로 입력하세요."
+    job: "필요 직업 id 를 채팅으로 입력하세요. 없애려면 none 이라고 치세요."
+    objective: "목표 대상과 개수를 채팅으로 입력하세요. 예: ZOMBIE 10"
+    cancel: "물리려면 {word} 라고 치세요."
+    cancelled: "입력을 물렸습니다."
+    bad-id: "id 로 쓸 수 없습니다: {input}"
+    duplicate-id: "이미 있는 퀘스트 id 입니다: {id}"
+  save:
+    done: "저장하고 다시 읽었습니다: {quest} ({id})"
+    failed: "저장하지 못했습니다. 콘솔 로그를 확인하세요."
+    warned: "저장은 했지만 다시 읽는 중 문제가 {count}건 있습니다. 콘솔 로그를 확인하세요."
+    no-objective: "목표가 하나도 없어 저장할 수 없습니다."
+  delete:
+    done: "지우고 다시 읽었습니다: {quest}"
+    failed: "지우지 못했습니다. 콘솔 로그를 확인하세요."
